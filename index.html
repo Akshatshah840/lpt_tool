@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="lpt-indigo">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LPT Tool — Language Proficiency Test</title>
+    <!-- Restore saved theme before React mounts to prevent flash -->
+    <script>
+      (function() {
+        const saved = localStorage.getItem('lpt-theme');
+        if (saved) document.documentElement.setAttribute('data-theme', saved);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
