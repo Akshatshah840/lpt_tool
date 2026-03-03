@@ -25,6 +25,7 @@ const schema = a.schema({
     description:            a.string(),
     fileSizeKb:             a.integer(),
     testAudioAssets:        a.hasMany('TestAudioAsset', 'audioAssetId'),
+    transcriptions:         a.hasMany('Transcription', 'audioAssetId'),
   }).authorization(allow => [
     allow.groups(['APP_ADMINS', 'PROJECT_ADMINS']),
     allow.authenticated().to(['read']),
