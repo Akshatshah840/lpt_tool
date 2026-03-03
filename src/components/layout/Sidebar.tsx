@@ -20,7 +20,7 @@ const PROJECT_ADMIN_NAV: NavItem[] = [
   { to: '/project/projects',     label: 'Projects',     icon: <FolderOpen size={17} /> },
   { to: '/project/tests',        label: 'Tests',        icon: <ClipboardList size={17} /> },
   { to: '/project/audio-assets', label: 'Audio Assets', icon: <FileAudio size={17} /> },
-  { to: '/project/transcribers', label: 'Users',        icon: <Users size={17} /> },
+  { to: '/project/users',        label: 'Users',        icon: <Users size={17} /> },
 ];
 
 const TRANSCRIBER_NAV: NavItem[] = [

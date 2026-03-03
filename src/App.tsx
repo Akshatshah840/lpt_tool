@@ -73,6 +73,7 @@ export default function App() {
           <Route path="/project/projects/:projectId"  element={<ProjectAdminProjectUsers />} />
           <Route path="/project/results/:resultId"    element={<ProjectAdminResultDetail />} />
           <Route path="/project/transcribers"         element={<ProjectAdminTranscribers />} />
+          <Route path="/project/users"                element={<AppAdminUsers canManageRoles={false} />} />
           <Route path="/project/tests"                element={<ProjectAdminTests />} />
           <Route path="/project/tests/:testId"        element={<ProjectAdminTestDetail />} />
           <Route path="/project/audio-assets"         element={<ProjectAdminAudioAssets />} />

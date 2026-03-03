@@ -100,7 +100,7 @@ const schema = a.schema({
   // Custom Cognito operations (APP_ADMINS only)
   listCognitoUsers: a.query()
     .returns(a.json().array())
-    .authorization(allow => [allow.group('APP_ADMINS')])
+    .authorization(allow => [allow.groups(['APP_ADMINS', 'PROJECT_ADMINS'])])
     .handler(a.handler.function(listUsersFn)),
 
   updateCognitoUserGroup: a.mutation()

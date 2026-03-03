@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users as UsersIcon, ShieldCheck, ShieldOff, Search } from 'lucide-react';
+import { Users as UsersIcon, ShieldCheck, ShieldOff, Search, AlertCircle } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { getInitials } from '@/lib/utils';
@@ -12,18 +12,35 @@ interface UserRow {
   groups: string[];
 }
 
-export function AppAdminUsers() {
+interface Props {
+  canManageRoles?: boolean;
+}
+
+export function AppAdminUsers({ canManageRoles = true }: Props) {
   const client = useAmplifyData();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [promoting, setPromoting] = useState<string | null>(null);
 
   async function load() {
-    const res = await client.queries.listCognitoUsers();
-    const data = (res.data ?? []) as UserRow[];
-    setUsers(data);
-    setLoading(false);
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await client.queries.listCognitoUsers();
+      // a.json().array() returns each element as a JSON string — parse before use
+      const raw = (res.data ?? []) as unknown[];
+      const data = raw.map(item =>
+        typeof item === 'string' ? JSON.parse(item) : item
+      ) as UserRow[];
+      setUsers(data);
+    } catch (e) {
+      console.error('Failed to load users:', e);
+      setError('Failed to load users. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); }, []);
@@ -37,6 +54,8 @@ export function AppAdminUsers() {
     try {
       await client.mutations.updateCognitoUserGroup({ userId, targetGroup: toGroup });
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, groups: [toGroup] } : u));
+    } catch (e) {
+      console.error('Failed to update user group:', e);
     } finally {
       setPromoting(null);
     }
@@ -65,6 +84,12 @@ export function AppAdminUsers() {
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => <div key={i} className="h-[72px] skeleton rounded-xl" />)}
         </div>
+      ) : error ? (
+        <GlassCard className="p-6 flex items-center gap-3 text-error">
+          <AlertCircle size={20} />
+          <span className="flex-1">{error}</span>
+          <button onClick={load} className="btn btn-sm btn-ghost">Retry</button>
+        </GlassCard>
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<UsersIcon size={24} />}
@@ -81,11 +106,11 @@ export function AppAdminUsers() {
                 <div className="flex items-center gap-3">
                   <div className="avatar placeholder">
                     <div className="w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold">
-                      <span>{getInitials(user.name)}</span>
+                      <span>{getInitials(user.name || user.email)}</span>
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium text-base-content">{user.name}</p>
+                    <p className="font-medium text-base-content">{user.name || user.email}</p>
                     <p className="text-base-content/50 text-sm">{user.email}</p>
                   </div>
                 </div>
@@ -97,7 +122,7 @@ export function AppAdminUsers() {
                       </span>
                     ))}
                   </div>
-                  {!isAppAdmin && (
+                  {canManageRoles && !isAppAdmin && (
                     <button
                       onClick={() => promoteUser(user.id, isProjAdmin ? 'TRANSCRIBERS' : 'PROJECT_ADMINS')}
                       disabled={promoting === user.id}
