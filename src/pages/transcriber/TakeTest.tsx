@@ -9,7 +9,7 @@ import { werToAccuracy } from '@/lib/utils';
 
 async function resolveAudioUrl(s3Key: string): Promise<string> {
   const { getUrl } = await import('aws-amplify/storage');
-  const result = await getUrl({ key: s3Key, options: { expiresIn: 3600 } });
+  const result = await getUrl({ path: s3Key, options: { expiresIn: 3600 } });
   return result.url.toString();
 }
 

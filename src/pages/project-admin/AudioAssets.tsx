@@ -11,7 +11,7 @@ async function uploadFile(
 ): Promise<void> {
   const { uploadData } = await import('aws-amplify/storage');
   await uploadData({
-    key,
+    path: key,
     data: file,
     options: {
       onProgress: ({ transferredBytes, totalBytes }) => {

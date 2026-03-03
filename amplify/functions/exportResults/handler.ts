@@ -1,6 +1,6 @@
 import type { AppSyncResolverHandler } from 'aws-lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, GetCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import * as XLSX from 'xlsx';
@@ -32,18 +32,22 @@ export const handler: AppSyncResolverHandler<ExportInput, ExportOutput> = async 
   const audioAssetTable = process.env.AUDIO_ASSET_TABLE_NAME ?? 'AudioAsset';
   const testTable = process.env.TEST_TABLE_NAME ?? 'Test';
 
-  const queryParams: Record<string, unknown> = {
-    TableName: testResultTable,
-  };
+  let testResults: Record<string, unknown>[];
 
   if (testId) {
-    queryParams.IndexName = 'byTest';
-    queryParams.KeyConditionExpression = 'testId = :testId';
-    queryParams.ExpressionAttributeValues = { ':testId': testId };
+    // Filter by specific test using the GSI
+    const resultsResp = await ddb.send(new QueryCommand({
+      TableName: testResultTable,
+      IndexName: 'byTest',
+      KeyConditionExpression: 'testId = :testId',
+      ExpressionAttributeValues: { ':testId': testId },
+    }));
+    testResults = (resultsResp.Items ?? []) as Record<string, unknown>[];
+  } else {
+    // Scan all results (optionally filtered by projectId in-memory below)
+    const resultsResp = await ddb.send(new ScanCommand({ TableName: testResultTable }));
+    testResults = (resultsResp.Items ?? []) as Record<string, unknown>[];
   }
-
-  const resultsResp = await ddb.send(new QueryCommand(queryParams as Parameters<typeof QueryCommand>[0]));
-  const testResults = resultsResp.Items ?? [];
 
   for (const result of testResults) {
     // Get test info

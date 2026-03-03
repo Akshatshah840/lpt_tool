@@ -1,3 +1,6 @@
 import { defineFunction } from '@aws-amplify/backend';
 
-export const updateUserGroupFn = defineFunction({ name: 'updateUserGroup' });
+export const updateUserGroupFn = defineFunction({
+  name: 'updateUserGroup',
+  resourceGroupName: 'data',
+});
