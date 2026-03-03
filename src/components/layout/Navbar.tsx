@@ -31,7 +31,7 @@ export function Navbar({ userName, userEmail }: NavbarProps) {
 
         {/* Divider + user chip */}
         <div className="flex items-center gap-2.5 pl-3 border-l border-white/[0.08]">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white shadow-md ring-2 ring-white/10 flex-shrink-0">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md ring-2 ring-white/10 flex-shrink-0" style={{ background: 'linear-gradient(135deg, oklch(var(--p)), oklch(var(--s)))' }}>
             {initials}
           </div>
           <span className="text-sm font-medium text-white/70 hidden sm:block max-w-[140px] truncate">

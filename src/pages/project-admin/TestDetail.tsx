@@ -90,7 +90,7 @@ export function ProjectAdminTestDetail() {
                   <td className="px-4 py-3">{r.status === 'COMPLETED' ? <StatusBadge status={r.passed} /> : '—'}</td>
                   <td className="px-4 py-3 text-xs text-white/40">{formatDate(r.completedAt)}</td>
                   <td className="px-4 py-3">
-                    <Link to={`/project/results/${r.id}`} className="p-1.5 rounded text-white/30 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all inline-flex">
+                    <Link to={`/project/results/${r.id}`} className="p-1.5 rounded text-white/30 hover-primary inline-flex">
                       <Eye size={14} />
                     </Link>
                   </td>

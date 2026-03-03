@@ -65,7 +65,7 @@ export function ThemeSwitcher() {
             >
               <span className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0" style={{ background: t.dot }} />
               <span className="flex-1 font-medium opacity-80">{t.label}</span>
-              {current === t.id && <Check size={13} className="text-indigo-400 flex-shrink-0" />}
+              {current === t.id && <Check size={13} className="nav-item-active-icon flex-shrink-0" />}
             </button>
           ))}
         </div>

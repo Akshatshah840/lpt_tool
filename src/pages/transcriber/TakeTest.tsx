@@ -54,8 +54,7 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
 
       // Check expiry
       if (testRes.data.expiresAt && new Date(testRes.data.expiresAt) < new Date()) {
-        alert('This test has expired.');
-        navigate('/transcriber/dashboard');
+        navigate('/transcriber/dashboard', { replace: true });
         return;
       }
 
@@ -262,7 +261,7 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center space-y-4">
-          <Loader2 size={40} className="animate-spin text-indigo-400 mx-auto" />
+          <Loader2 size={40} className="animate-spin mx-auto" style={{ color: 'oklch(var(--p))' }} />
           <p className="text-white/60">Scoring your transcriptions…</p>
         </div>
       </div>
@@ -290,10 +289,14 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
               {clips.map((c, i) => (
                 <div
                   key={c.audioAssetId}
-                  className={`h-1.5 w-8 rounded-full transition-all ${
-                    i === clipIndex ? 'bg-indigo-500' :
-                    (transcriptions[c.audioAssetId] ?? '').trim() ? 'bg-green-500/60' : 'bg-white/20'
-                  }`}
+                  className="h-1.5 w-8 rounded-full transition-all"
+                  style={{
+                    background: i === clipIndex
+                      ? 'oklch(var(--p))'
+                      : (transcriptions[c.audioAssetId] ?? '').trim()
+                      ? 'oklch(var(--su) / 0.6)'
+                      : 'oklch(var(--bc) / 0.2)',
+                  }}
                 />
               ))}
             </div>

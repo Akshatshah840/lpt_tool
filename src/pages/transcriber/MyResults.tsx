@@ -63,12 +63,12 @@ export function TranscriberMyResults({ userId }: MyResultsProps) {
       {!loading && completed.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Tests Completed', value: completed.length, color: '#6366f1' },
-            { label: 'Tests Passed', value: passed.length, color: '#22c55e' },
-            { label: 'Pass Rate', value: `${passRate}%`, color: '#f97316' },
+            { label: 'Tests Completed', value: completed.length, colorVar: '--p' },
+            { label: 'Tests Passed', value: passed.length, colorVar: '--su' },
+            { label: 'Pass Rate', value: `${passRate}%`, colorVar: '--wa' },
           ].map(s => (
             <GlassCard key={s.label} glow className="p-5 text-center">
-              <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+              <p className="text-2xl font-bold" style={{ color: `oklch(var(${s.colorVar}))` }}>{s.value}</p>
               <p className="text-white/40 text-sm mt-1">{s.label}</p>
             </GlassCard>
           ))}
@@ -108,7 +108,7 @@ export function TranscriberMyResults({ userId }: MyResultsProps) {
                     {r.status === 'COMPLETED' && (
                       <Link
                         to={`/transcriber/result/${r.id}`}
-                        className="p-1.5 rounded text-white/30 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all inline-flex"
+                        className="p-1.5 rounded text-white/30 hover-primary inline-flex"
                       >
                         <Eye size={14} />
                       </Link>

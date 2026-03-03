@@ -123,7 +123,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
         {/* Play / Pause */}
         <button
           onClick={togglePlay}
-          className="p-3 rounded-full bg-indigo-600 hover:bg-indigo-500 transition-colors text-white shadow-lg"
+          className="p-3 rounded-full btn-gradient shadow-lg"
           title={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
@@ -138,7 +138,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
             step={0.1}
             value={currentTime}
             onChange={handleSeek}
-            className="w-full h-1.5 accent-indigo-500 cursor-pointer"
+            className="w-full h-1.5 accent-[oklch(var(--p))] cursor-pointer"
           />
           <div className="flex justify-between text-xs text-white/40">
             <span>{formatTime(currentTime)}</span>
@@ -156,7 +156,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
             step={0.05}
             value={volume}
             onChange={handleVolume}
-            className="w-16 h-1.5 accent-indigo-500 cursor-pointer"
+            className="w-16 h-1.5 accent-[oklch(var(--p))] cursor-pointer"
           />
         </div>
       </div>

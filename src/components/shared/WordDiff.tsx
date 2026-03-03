@@ -97,7 +97,7 @@ export function WordDiff({ reference, submitted, wer, clipNumber, audioFilename 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {clipNumber != null && (
-            <span className="text-xs font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full badge-open">
               Clip {clipNumber}
             </span>
           )}

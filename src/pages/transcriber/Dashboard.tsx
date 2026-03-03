@@ -89,7 +89,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
       <div>
         <h1 className="text-2xl font-bold text-white">My Tests</h1>
         <p className="text-white/40 text-sm mt-1">
-          Open tests for <span className="text-indigo-300 font-medium">{userLanguage?.toUpperCase()}</span>
+          Open tests for <span className="font-medium" style={{ color: 'oklch(var(--p))' }}>{userLanguage?.toUpperCase()}</span>
           {' '}— all available tests are shown automatically
         </p>
       </div>
@@ -97,12 +97,12 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Available',  value: tests.length,     color: '#6366f1' },
-          { label: 'Pending',    value: pending.length,   color: '#eab308' },
-          { label: 'Completed',  value: completed.length, color: '#22c55e' },
+          { label: 'Available',  value: tests.length,     colorVar: '--p' },
+          { label: 'Pending',    value: pending.length,   colorVar: '--wa' },
+          { label: 'Completed',  value: completed.length, colorVar: '--su' },
         ].map(s => (
           <GlassCard key={s.label} glow className="p-5 text-center">
-            <p className="text-3xl font-bold" style={{ color: s.color }}>{loading ? '—' : s.value}</p>
+            <p className="text-3xl font-bold" style={{ color: `oklch(var(${s.colorVar}))` }}>{loading ? '—' : s.value}</p>
             <p className="text-white/40 text-sm mt-1">{s.label}</p>
           </GlassCard>
         ))}
@@ -110,7 +110,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 size={28} className="animate-spin text-indigo-400" />
+          <Loader2 size={28} className="animate-spin" style={{ color: 'oklch(var(--p))' }} />
         </div>
       ) : tests.length === 0 ? (
         <GlassCard className="p-12 text-center">
@@ -145,7 +145,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
                       <span className="text-white/40 text-sm">Min {Math.round(t.minAccuracy * 100)}% accuracy</span>
                     </div>
                     {t.expiresAt && (
-                      <div className="flex items-center gap-1 mt-1.5 text-yellow-400/70 text-xs">
+                      <div className="flex items-center gap-1 mt-1.5 text-xs" style={{ color: 'oklch(var(--wa) / 0.75)' }}>
                         <Clock size={11} />
                         <span>Expires {formatDate(t.expiresAt)}</span>
                       </div>
@@ -172,7 +172,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
                 <GlassCard key={t.testId} className="p-5 flex items-start justify-between gap-4 opacity-75">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+                      <CheckCircle2 size={16} className="flex-shrink-0" style={{ color: 'oklch(var(--su))' }} />
                       <h3 className="font-semibold text-white">{t.testName}</h3>
                       <StatusBadge status={t.passed} />
                     </div>

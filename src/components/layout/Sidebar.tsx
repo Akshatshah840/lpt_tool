@@ -16,9 +16,11 @@ const APP_ADMIN_NAV: NavItem[] = [
 ];
 
 const PROJECT_ADMIN_NAV: NavItem[] = [
-  { to: '/project/dashboard',    label: 'Dashboard', icon: <LayoutDashboard size={17} /> },
-  { to: '/project/projects',     label: 'Projects',  icon: <FolderOpen size={17} /> },
-  { to: '/project/transcribers', label: 'Users',     icon: <Users size={17} /> },
+  { to: '/project/dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={17} /> },
+  { to: '/project/projects',     label: 'Projects',     icon: <FolderOpen size={17} /> },
+  { to: '/project/tests',        label: 'Tests',        icon: <ClipboardList size={17} /> },
+  { to: '/project/audio-assets', label: 'Audio Assets', icon: <FileAudio size={17} /> },
+  { to: '/project/transcribers', label: 'Users',        icon: <Users size={17} /> },
 ];
 
 const TRANSCRIBER_NAV: NavItem[] = [
@@ -78,14 +80,14 @@ export function Sidebar({ role, onSignOut }: SidebarProps) {
                   cn(
                     'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-500/20 to-violet-500/10 text-white border border-indigo-500/25 shadow-sm'
+                      ? 'nav-item-active text-white shadow-sm'
                       : 'text-white/50 hover:text-white/85 hover:bg-white/[0.06]'
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <span className={cn('transition-colors', isActive ? 'text-indigo-400' : 'text-white/35')}>
+                    <span className={cn('transition-colors', isActive ? 'nav-item-active-icon' : 'text-white/35')}>
                       {item.icon}
                     </span>
                     {item.label}

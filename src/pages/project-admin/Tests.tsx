@@ -84,7 +84,7 @@ function CreateTestForm({ projects, audioAssets, onSave, onCancel }: CreateTestF
             type="range" min={10} max={100} step={5}
             value={minAccuracy}
             onChange={e => setMinAccuracy(Number(e.target.value))}
-            className="w-full accent-indigo-500"
+            className="w-full accent-[oklch(var(--p))]"
           />
         </div>
         <div>
@@ -110,7 +110,7 @@ function CreateTestForm({ projects, audioAssets, onSave, onCancel }: CreateTestF
                     type="checkbox"
                     checked={selectedAssets.includes(a.id)}
                     onChange={() => toggleAsset(a.id)}
-                    className="accent-indigo-500"
+                    className="accent-[oklch(var(--p))]"
                   />
                   <span className="text-sm text-white/80">{i + 1}. {a.filename}</span>
                 </label>
@@ -228,7 +228,7 @@ export function ProjectAdminTests() {
                   {test.status === 'OPEN' && (
                     <button onClick={() => updateStatus(test.id, 'CLOSED')} className="px-3 py-1.5 text-xs bg-gray-500/20 text-gray-300 border border-gray-500/20 rounded-lg hover:bg-gray-500/30 transition-all">Close</button>
                   )}
-                  <Link to={`/project/tests/${test.id}`} className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg hover:bg-indigo-500/30 transition-all">
+                  <Link to={`/project/tests/${test.id}`} className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all hover-primary badge-open">
                     View <ArrowRight size={12} />
                   </Link>
                 </div>

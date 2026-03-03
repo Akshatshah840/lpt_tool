@@ -31,15 +31,15 @@ export function ProfileSetup({ userName, onComplete }: ProfileSetupProps) {
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative blobs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-indigo-600/8 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-violet-600/8 blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl" style={{ background: 'oklch(var(--p) / 0.08)' }} />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl" style={{ background: 'oklch(var(--s) / 0.08)' }} />
       </div>
 
       <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-600/20 border border-indigo-500/25 shadow-xl mb-5">
-            <UserCircle size={30} className="text-indigo-400" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-xl mb-5" style={{ background: 'linear-gradient(135deg, oklch(var(--p) / 0.2), oklch(var(--s) / 0.2))', border: '1px solid oklch(var(--p) / 0.25)' }}>
+            <UserCircle size={30} style={{ color: 'oklch(var(--p))' }} />
           </div>
           <h1 className="text-2xl font-bold text-white">Complete Your Profile</h1>
           <p className="text-white/40 text-sm mt-2">
@@ -64,7 +64,7 @@ export function ProfileSetup({ userName, onComplete }: ProfileSetupProps) {
                     placeholder="First name"
                     className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/10 text-white text-sm
                       placeholder-white/25 outline-none transition-all
-                      focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20"
+                      focus:border-[oklch(var(--p)/0.6)] focus:ring-2 focus:ring-[oklch(var(--p)/0.2)]"
                   />
                 </div>
                 <div>
@@ -75,7 +75,7 @@ export function ProfileSetup({ userName, onComplete }: ProfileSetupProps) {
                     placeholder="Last name"
                     className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/10 text-white text-sm
                       placeholder-white/25 outline-none transition-all
-                      focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20"
+                      focus:border-[oklch(var(--p)/0.6)] focus:ring-2 focus:ring-[oklch(var(--p)/0.2)]"
                   />
                 </div>
               </div>

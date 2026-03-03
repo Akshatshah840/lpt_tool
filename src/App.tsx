@@ -16,15 +16,19 @@ import { ProjectAdminProjectsManager } from '@/pages/project-admin/ProjectsManag
 import { ProjectAdminProjectUsers } from '@/pages/project-admin/ProjectUsers';
 import { ProjectAdminResultDetail } from '@/pages/project-admin/ResultDetail';
 import { ProjectAdminTranscribers } from '@/pages/project-admin/Transcribers';
+import { ProjectAdminTests } from '@/pages/project-admin/Tests';
+import { ProjectAdminTestDetail } from '@/pages/project-admin/TestDetail';
+import { ProjectAdminAudioAssets } from '@/pages/project-admin/AudioAssets';
 
 import { TranscriberDashboard } from '@/pages/transcriber/Dashboard';
 import { TranscriberTakeTest } from '@/pages/transcriber/TakeTest';
 import { TranscriberMyResults } from '@/pages/transcriber/MyResults';
+import { TranscriberResultDetail } from '@/pages/transcriber/ResultDetail';
 
 function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-12 h-12 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }
@@ -69,6 +73,9 @@ export default function App() {
           <Route path="/project/projects/:projectId"  element={<ProjectAdminProjectUsers />} />
           <Route path="/project/results/:resultId"    element={<ProjectAdminResultDetail />} />
           <Route path="/project/transcribers"         element={<ProjectAdminTranscribers />} />
+          <Route path="/project/tests"                element={<ProjectAdminTests />} />
+          <Route path="/project/tests/:testId"        element={<ProjectAdminTestDetail />} />
+          <Route path="/project/audio-assets"         element={<ProjectAdminAudioAssets />} />
           <Route path="*" element={<Navigate to="/project/dashboard" replace />} />
         </Routes>
       </AppLayout>
@@ -82,6 +89,7 @@ export default function App() {
         <Route path="/transcriber/dashboard"    element={<TranscriberDashboard userId={userId} userLanguage={preferredLanguage} />} />
         <Route path="/transcriber/test/:testId" element={<TranscriberTakeTest userId={userId} userName={userName} userEmail={userEmail} />} />
         <Route path="/transcriber/results"      element={<TranscriberMyResults userId={userId} />} />
+        <Route path="/transcriber/result/:resultId" element={<TranscriberResultDetail />} />
         <Route path="*" element={<Navigate to="/transcriber/dashboard" replace />} />
       </Routes>
     </AppLayout>

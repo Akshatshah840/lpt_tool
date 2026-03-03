@@ -23,11 +23,7 @@ export function useExport() {
       });
 
       const data = result?.data as { downloadUrl: string } | null;
-      if (!data?.downloadUrl || data.downloadUrl === '#mock-export') {
-        // Mock mode — just show an alert
-        alert(`[Mock] Export ${options.format} triggered. In production this downloads a real file.`);
-        return;
-      }
+      if (!data?.downloadUrl) return;
 
       const link = document.createElement('a');
       link.href = data.downloadUrl;

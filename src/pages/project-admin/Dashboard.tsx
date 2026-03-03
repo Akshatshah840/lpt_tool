@@ -74,10 +74,10 @@ export function ProjectAdminDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: <ClipboardList size={20} />, label: 'Total Tests', value: stats.tests, color: '#6366f1' },
-          { icon: <Clock size={20} />, label: 'Open Tests', value: stats.open, color: '#8b5cf6' },
-          { icon: <CheckCircle size={20} />, label: 'Completed', value: stats.results, color: '#22c55e' },
-          { icon: <TrendingUp size={20} />, label: 'Pass Rate', value: `${stats.passRate}%`, color: '#f97316' },
+          { icon: <ClipboardList size={20} />, label: 'Total Tests', value: stats.tests, colorVar: '--p' },
+          { icon: <Clock size={20} />, label: 'Open Tests', value: stats.open, colorVar: '--s' },
+          { icon: <CheckCircle size={20} />, label: 'Completed', value: stats.results, colorVar: '--su' },
+          { icon: <TrendingUp size={20} />, label: 'Pass Rate', value: `${stats.passRate}%`, colorVar: '--wa' },
         ].map(s => (
           <GlassCard key={s.label} glow className="p-5">
             <div className="flex items-start justify-between">
@@ -85,8 +85,8 @@ export function ProjectAdminDashboard() {
                 <p className="text-white/50 text-xs">{s.label}</p>
                 <p className="text-2xl font-bold text-white mt-0.5">{loading ? '—' : s.value}</p>
               </div>
-              <div className="p-2 rounded-lg" style={{ background: `${s.color}22`, border: `1px solid ${s.color}33` }}>
-                <span style={{ color: s.color }}>{s.icon}</span>
+              <div className="p-2 rounded-lg" style={{ background: `oklch(var(${s.colorVar}) / 0.13)`, border: `1px solid oklch(var(${s.colorVar}) / 0.2)` }}>
+                <span style={{ color: `oklch(var(${s.colorVar}))` }}>{s.icon}</span>
               </div>
             </div>
           </GlassCard>
@@ -107,10 +107,10 @@ export function ProjectAdminDashboard() {
               return (
                 <div key={p.id} className="flex items-center justify-between py-3 px-4 rounded-lg bg-white/5 border border-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`p-1.5 rounded-lg ${isOpen ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                    <div className="p-1.5 rounded-lg" style={{ background: isOpen ? 'oklch(var(--su) / 0.1)' : 'oklch(var(--er) / 0.1)' }}>
                       {isOpen
-                        ? <FolderOpen size={16} className="text-green-400" />
-                        : <FolderX size={16} className="text-red-400" />
+                        ? <FolderOpen size={16} style={{ color: 'oklch(var(--su))' }} />
+                        : <FolderX size={16} style={{ color: 'oklch(var(--er))' }} />
                       }
                     </div>
                     <div>
@@ -119,7 +119,7 @@ export function ProjectAdminDashboard() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isOpen ? 'bg-green-500/20 text-green-300 border border-green-500/20' : 'bg-red-500/20 text-red-300 border border-red-500/20'}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold tracking-wide inline-flex items-center ${isOpen ? 'badge-pass' : 'badge-closed'}`}>
                       {p.status}
                     </span>
                     <button

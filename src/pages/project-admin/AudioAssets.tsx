@@ -4,22 +4,11 @@ import { GlassCard } from '@/components/shared/GlassCard';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate, truncate } from '@/lib/utils';
 
-const IS_MOCK = import.meta.env.VITE_MOCK_MODE === 'true';
-
-// Upload shim: in mock mode just simulates progress, in real mode uses Amplify Storage
 async function uploadFile(
   key: string,
   file: File,
   onProgress: (pct: number) => void
 ): Promise<void> {
-  if (IS_MOCK) {
-    // Simulate upload progress
-    for (let i = 10; i <= 100; i += 10) {
-      await new Promise(r => setTimeout(r, 80));
-      onProgress(i);
-    }
-    return;
-  }
   const { uploadData } = await import('aws-amplify/storage');
   await uploadData({
     key,
@@ -127,7 +116,7 @@ function UploadForm({ projects, onUploaded }: UploadFormProps) {
           type="file"
           accept="audio/*"
           onChange={e => setFile(e.target.files?.[0] ?? null)}
-          className="glass-input w-full px-3 py-2 text-sm file:text-indigo-400 file:bg-transparent file:border-0 file:cursor-pointer"
+          className="glass-input w-full px-3 py-2 text-sm file:bg-transparent file:border-0 file:cursor-pointer file-input-themed"
         />
         {file && (
           <p className="text-xs text-white/40 mt-1">{file.name} ({Math.round(file.size / 1024)} KB)</p>
@@ -162,8 +151,8 @@ function UploadForm({ projects, onUploaded }: UploadFormProps) {
           </div>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-indigo-500 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
+              className="h-full rounded-full transition-all"
+              style={{ background: 'oklch(var(--p))', width: `${progress}%` }}
             />
           </div>
         </div>

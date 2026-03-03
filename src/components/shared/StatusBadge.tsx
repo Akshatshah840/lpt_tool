@@ -15,11 +15,11 @@ const CONFIG: Record<string, { label: string; className: string }> = {
   FAIL:        { label: 'Fail',        className: 'badge-fail' },
   PENDING:     { label: 'Pending',     className: 'badge-pending' },
   CREATED:     { label: 'Created',     className: 'badge-pending' },
-  OPEN:        { label: 'Open',        className: 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/25' },
-  CLOSED:      { label: 'Closed',      className: 'bg-white/5 text-white/40 border border-white/10' },
-  ASSIGNED:    { label: 'Assigned',    className: 'bg-sky-500/15 text-sky-300 border border-sky-500/25' },
+  OPEN:        { label: 'Open',        className: 'badge-open' },
+  CLOSED:      { label: 'Closed',      className: 'badge-closed' },
+  ASSIGNED:    { label: 'Assigned',    className: 'badge-assigned' },
   IN_PROGRESS: { label: 'In Progress', className: 'badge-pending' },
-  COMPLETED:   { label: 'Completed',   className: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25' },
+  COMPLETED:   { label: 'Completed',   className: 'badge-completed' },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

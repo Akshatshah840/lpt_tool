@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Users, FolderOpen, ClipboardList, CheckCircle, TrendingUp } from 'lucide-react';
+import { FolderOpen, ClipboardList, CheckCircle, TrendingUp } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
-import { werToAccuracyNumber } from '@/lib/utils';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
@@ -12,10 +11,11 @@ interface StatCardProps {
   label: string;
   value: string | number;
   sub?: string;
-  color?: string;
+  colorVar?: string;
 }
 
-function StatCard({ icon, label, value, sub, color = '#6366f1' }: StatCardProps) {
+function StatCard({ icon, label, value, sub, colorVar = '--p' }: StatCardProps) {
+  const c = `oklch(var(${colorVar}))`;
   return (
     <GlassCard glow className="p-6">
       <div className="flex items-start justify-between">
@@ -24,8 +24,8 @@ function StatCard({ icon, label, value, sub, color = '#6366f1' }: StatCardProps)
           <p className="text-3xl font-bold text-white mt-1">{value}</p>
           {sub && <p className="text-white/40 text-xs mt-1">{sub}</p>}
         </div>
-        <div className="p-3 rounded-xl" style={{ background: `${color}22`, border: `1px solid ${color}33` }}>
-          <span style={{ color }}>{icon}</span>
+        <div className="p-3 rounded-xl" style={{ background: `oklch(var(${colorVar}) / 0.13)`, border: `1px solid oklch(var(${colorVar}) / 0.2)` }}>
+          <span style={{ color: c }}>{icon}</span>
         </div>
       </div>
     </GlassCard>
@@ -35,7 +35,7 @@ function StatCard({ icon, label, value, sub, color = '#6366f1' }: StatCardProps)
 export function AppAdminDashboard() {
   const client = useAmplifyData();
   const [stats, setStats] = useState({
-    projects: 0, tests: 0, users: 0, results: 0, passRate: 0,
+    projects: 0, tests: 0, results: 0, passRate: 0,
   });
   const [chartData, setChartData] = useState<{ name: string; pass: number; fail: number }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +59,6 @@ export function AppAdminDashboard() {
         setStats({
           projects: projectsRes.data?.length ?? 0,
           tests: testsRes.data?.length ?? 0,
-          users: 0,
           results: completed.length,
           passRate,
         });
@@ -99,10 +98,10 @@ export function AppAdminDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={<FolderOpen size={20} />} label="Projects" value={stats.projects} color="#6366f1" />
-          <StatCard icon={<ClipboardList size={20} />} label="Tests" value={stats.tests} color="#8b5cf6" />
-          <StatCard icon={<CheckCircle size={20} />} label="Completed Results" value={stats.results} color="#22c55e" />
-          <StatCard icon={<TrendingUp size={20} />} label="Pass Rate" value={`${stats.passRate}%`} color="#f97316" />
+          <StatCard icon={<FolderOpen size={20} />} label="Projects" value={stats.projects} colorVar="--p" />
+          <StatCard icon={<ClipboardList size={20} />} label="Tests" value={stats.tests} colorVar="--s" />
+          <StatCard icon={<CheckCircle size={20} />} label="Completed Results" value={stats.results} colorVar="--su" />
+          <StatCard icon={<TrendingUp size={20} />} label="Pass Rate" value={`${stats.passRate}%`} colorVar="--wa" />
         </div>
       )}
 
@@ -112,12 +111,12 @@ export function AppAdminDashboard() {
           <h2 className="text-lg font-semibold text-white mb-4">Pass / Fail by Test</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData} barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--bc) / 0.08)" />
+              <XAxis dataKey="name" tick={{ fill: 'oklch(var(--bc) / 0.5)', fontSize: 12 }} />
+              <YAxis tick={{ fill: 'oklch(var(--bc) / 0.5)', fontSize: 12 }} />
               <Tooltip
-                contentStyle={{ background: 'rgba(15,12,41,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                labelStyle={{ color: 'white' }}
+                contentStyle={{ background: 'oklch(var(--b2))', border: '1px solid oklch(var(--bc) / 0.1)', borderRadius: '8px' }}
+                labelStyle={{ color: 'oklch(var(--bc))' }}
               />
               <Bar dataKey="pass" name="Pass" fill="#22c55e" radius={[4, 4, 0, 0]} />
               <Bar dataKey="fail" name="Fail" fill="#ef4444" radius={[4, 4, 0, 0]} />

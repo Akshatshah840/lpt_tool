@@ -24,10 +24,8 @@ export function ExportButton({ testId, projectId, className }: ExportButtonProps
         onClick={() => setShowMenu(v => !v)}
         disabled={isExporting}
         className={cn(
-          'flex items-center gap-2 px-4 py-2 rounded-lg',
-          'bg-indigo-600/80 hover:bg-indigo-500/80 border border-indigo-500/30',
-          'text-white text-sm font-medium transition-all',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
+          'flex items-center gap-2 px-4 py-2 rounded-lg btn-gradient',
+          'text-sm disabled:opacity-50 disabled:cursor-not-allowed',
           className
         )}
       >
