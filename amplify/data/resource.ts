@@ -1,6 +1,7 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { listUsersFn } from '../functions/listUsers/resource';
 import { updateUserGroupFn } from '../functions/updateUserGroup/resource';
+import { exportResults } from '../functions/exportResults/resource';
 
 const schema = a.schema({
 
@@ -107,6 +108,17 @@ const schema = a.schema({
     .returns(a.json())
     .authorization(allow => [allow.group('APP_ADMINS')])
     .handler(a.handler.function(updateUserGroupFn)),
+
+  // Export results to CSV / XLSX (APP_ADMINS + PROJECT_ADMINS)
+  exportResults: a.mutation()
+    .arguments({
+      testId: a.string(),
+      projectId: a.string(),
+      format: a.string().required(),
+    })
+    .returns(a.json())
+    .authorization(allow => [allow.groups(['APP_ADMINS', 'PROJECT_ADMINS'])])
+    .handler(a.handler.function(exportResults)),
 
 });
 
