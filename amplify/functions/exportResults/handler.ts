@@ -1,6 +1,6 @@
 import type { AppSyncResolverHandler } from 'aws-lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand, GetCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, ScanCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import * as XLSX from 'xlsx';
@@ -35,16 +35,13 @@ export const handler: AppSyncResolverHandler<ExportInput, ExportOutput> = async 
   let testResults: Record<string, unknown>[];
 
   if (testId) {
-    // Filter by specific test using the GSI
-    const resultsResp = await ddb.send(new QueryCommand({
+    const resultsResp = await ddb.send(new ScanCommand({
       TableName: testResultTable,
-      IndexName: 'byTest',
-      KeyConditionExpression: 'testId = :testId',
+      FilterExpression: 'testId = :testId',
       ExpressionAttributeValues: { ':testId': testId },
     }));
     testResults = (resultsResp.Items ?? []) as Record<string, unknown>[];
   } else {
-    // Scan all results (optionally filtered by projectId in-memory below)
     const resultsResp = await ddb.send(new ScanCommand({ TableName: testResultTable }));
     testResults = (resultsResp.Items ?? []) as Record<string, unknown>[];
   }
@@ -58,10 +55,9 @@ export const handler: AppSyncResolverHandler<ExportInput, ExportOutput> = async 
     const test = testResp.Item;
 
     // Get transcriptions for this result
-    const transResp = await ddb.send(new QueryCommand({
+    const transResp = await ddb.send(new ScanCommand({
       TableName: transcriptionTable,
-      IndexName: 'byTestResult',
-      KeyConditionExpression: 'testResultId = :id',
+      FilterExpression: 'testResultId = :id',
       ExpressionAttributeValues: { ':id': result.id },
     }));
     const transcriptions = (transResp.Items ?? []).sort(

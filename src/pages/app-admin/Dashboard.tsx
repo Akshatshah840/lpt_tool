@@ -1,36 +1,11 @@
 import { useEffect, useState } from 'react';
 import { FolderOpen, ClipboardList, CheckCircle, TrendingUp } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
+import { StatCard } from '@/components/shared/StatCard';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  sub?: string;
-  colorVar?: string;
-}
-
-function StatCard({ icon, label, value, sub, colorVar = '--p' }: StatCardProps) {
-  const c = `oklch(var(${colorVar}))`;
-  return (
-    <GlassCard glow className="p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-white/50 text-sm">{label}</p>
-          <p className="text-3xl font-bold text-white mt-1">{value}</p>
-          {sub && <p className="text-white/40 text-xs mt-1">{sub}</p>}
-        </div>
-        <div className="p-3 rounded-xl" style={{ background: `oklch(var(${colorVar}) / 0.13)`, border: `1px solid oklch(var(${colorVar}) / 0.2)` }}>
-          <span style={{ color: c }}>{icon}</span>
-        </div>
-      </div>
-    </GlassCard>
-  );
-}
 
 export function AppAdminDashboard() {
   const client = useAmplifyData();
@@ -86,29 +61,21 @@ export function AppAdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-white/40 text-sm mt-1">Global overview of all tests and results</p>
+        <h1 className="text-2xl font-bold text-base-content">Dashboard</h1>
+        <p className="text-base-content/40 text-sm mt-1">Global overview of all tests and results</p>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <GlassCard key={i} className="p-6 h-32 skeleton" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={<FolderOpen size={20} />} label="Projects" value={stats.projects} colorVar="--p" />
-          <StatCard icon={<ClipboardList size={20} />} label="Tests" value={stats.tests} colorVar="--s" />
-          <StatCard icon={<CheckCircle size={20} />} label="Completed Results" value={stats.results} colorVar="--su" />
-          <StatCard icon={<TrendingUp size={20} />} label="Pass Rate" value={`${stats.passRate}%`} colorVar="--wa" />
-        </div>
-      )}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={<FolderOpen size={20} />} label="Projects" value={stats.projects} colorVar="--p" loading={loading} />
+        <StatCard icon={<ClipboardList size={20} />} label="Tests" value={stats.tests} colorVar="--s" loading={loading} />
+        <StatCard icon={<CheckCircle size={20} />} label="Completed Results" value={stats.results} colorVar="--su" loading={loading} />
+        <StatCard icon={<TrendingUp size={20} />} label="Pass Rate" value={`${stats.passRate}%`} colorVar="--wa" loading={loading} />
+      </div>
 
       {/* Chart */}
       {chartData.length > 0 && (
         <GlassCard className="p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Pass / Fail by Test</h2>
+          <h2 className="text-lg font-semibold text-base-content mb-4">Pass / Fail by Test</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData} barGap={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--bc) / 0.08)" />

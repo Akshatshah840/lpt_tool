@@ -92,30 +92,30 @@ export function WordDiff({ reference, submitted, wer, clipNumber, audioFilename 
   const accuracy = wer != null ? (1 - Math.min(wer, 1)) * 100 : null;
 
   return (
-    <div className="glass-card p-4 space-y-3">
+    <div className="card p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {clipNumber != null && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full badge-open">
+            <span className="badge badge-info badge-sm font-semibold">
               Clip {clipNumber}
             </span>
           )}
           {audioFilename && (
-            <span className="text-xs text-white/40">{audioFilename}</span>
+            <span className="text-xs text-base-content/40">{audioFilename}</span>
           )}
         </div>
         {wer != null && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-white/40">WER: {wer.toFixed(3)}</span>
+            <span className="text-xs text-base-content/40">WER: {wer.toFixed(3)}</span>
             <span
               className={cn(
-                'text-xs font-bold px-2 py-0.5 rounded-full',
+                'badge badge-sm font-bold',
                 accuracy != null && accuracy >= 80
-                  ? 'bg-green-500/20 text-green-300'
+                  ? 'badge-success'
                   : accuracy != null && accuracy >= 60
-                  ? 'bg-yellow-500/20 text-yellow-300'
-                  : 'bg-red-500/20 text-red-300'
+                  ? 'badge-warning'
+                  : 'badge-error'
               )}
             >
               {werToAccuracy(wer)}
@@ -127,27 +127,27 @@ export function WordDiff({ reference, submitted, wer, clipNumber, audioFilename 
       {/* Diff columns */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <div className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+          <div className="text-xs font-semibold text-base-content/40 uppercase tracking-wider mb-2">
             Reference
           </div>
-          <div className="text-sm leading-relaxed bg-white/5 rounded-lg p-3 min-h-[60px]">
-            {reference ? renderTokens(left) : <span className="text-white/20 italic">empty</span>}
+          <div className="text-sm leading-relaxed bg-base-content/[0.04] rounded-lg p-3 min-h-[60px]">
+            {reference ? renderTokens(left) : <span className="text-base-content/20 italic">empty</span>}
           </div>
         </div>
         <div>
-          <div className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+          <div className="text-xs font-semibold text-base-content/40 uppercase tracking-wider mb-2">
             Submitted
           </div>
-          <div className="text-sm leading-relaxed bg-white/5 rounded-lg p-3 min-h-[60px]">
+          <div className="text-sm leading-relaxed bg-base-content/[0.04] rounded-lg p-3 min-h-[60px]">
             {submitted
               ? renderTokens(right)
-              : <span className="text-white/20 italic">not submitted</span>}
+              : <span className="text-base-content/20 italic">not submitted</span>}
           </div>
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 text-xs text-white/40">
+      <div className="flex gap-4 text-xs text-base-content/40">
         <span><span className="diff-deleted mr-1">word</span>= deleted/wrong</span>
         <span><span className="diff-inserted mr-1">word</span>= extra/substituted</span>
       </div>

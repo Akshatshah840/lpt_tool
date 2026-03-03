@@ -11,15 +11,15 @@ interface StatusBadgeProps {
 }
 
 const CONFIG: Record<string, { label: string; className: string }> = {
-  PASS:        { label: 'Pass',        className: 'badge-pass' },
-  FAIL:        { label: 'Fail',        className: 'badge-fail' },
-  PENDING:     { label: 'Pending',     className: 'badge-pending' },
-  CREATED:     { label: 'Created',     className: 'badge-pending' },
-  OPEN:        { label: 'Open',        className: 'badge-open' },
-  CLOSED:      { label: 'Closed',      className: 'badge-closed' },
-  ASSIGNED:    { label: 'Assigned',    className: 'badge-assigned' },
-  IN_PROGRESS: { label: 'In Progress', className: 'badge-pending' },
-  COMPLETED:   { label: 'Completed',   className: 'badge-completed' },
+  PASS:        { label: 'Pass',        className: 'badge badge-success badge-sm' },
+  FAIL:        { label: 'Fail',        className: 'badge badge-error badge-sm' },
+  PENDING:     { label: 'Pending',     className: 'badge badge-warning badge-sm' },
+  CREATED:     { label: 'Created',     className: 'badge badge-warning badge-sm' },
+  OPEN:        { label: 'Open',        className: 'badge badge-info badge-sm' },
+  CLOSED:      { label: 'Closed',      className: 'badge badge-neutral badge-sm' },
+  ASSIGNED:    { label: 'Assigned',    className: 'badge badge-info badge-sm' },
+  IN_PROGRESS: { label: 'In Progress', className: 'badge badge-warning badge-sm' },
+  COMPLETED:   { label: 'Completed',   className: 'badge badge-success badge-sm' },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
@@ -29,10 +29,10 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   else if (status == null) key = 'PENDING';
   else key = String(status);
 
-  const config = CONFIG[key] ?? { label: key, className: 'badge-pending' };
+  const config = CONFIG[key] ?? { label: key, className: 'badge badge-warning badge-sm' };
 
   return (
-    <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide', config.className, className)}>
+    <span className={cn('font-semibold tracking-wide', config.className, className)}>
       {config.label}
     </span>
   );

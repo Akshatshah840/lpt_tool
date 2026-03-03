@@ -2,51 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── CSS Custom Properties ─────────────────────────────────────── */
-
-:root {
-  --radius: 0.75rem;
-
-  /* shadcn/ui dark variables */
-  --background: 222 47% 4%;
-  --foreground: 214 32% 91%;
-  --card: 222 47% 6%;
-  --card-foreground: 214 32% 91%;
-  --popover: 222 47% 6%;
-  --popover-foreground: 214 32% 91%;
-  --primary: 239 84% 67%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 262 80% 60%;
-  --secondary-foreground: 0 0% 100%;
-  --muted: 222 47% 11%;
-  --muted-foreground: 215 20% 55%;
-  --accent: 222 47% 11%;
-  --accent-foreground: 214 32% 91%;
-  --destructive: 0 63% 50%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 222 30% 14%;
-  --input: 222 30% 14%;
-  --ring: 239 84% 67%;
-}
-
-[data-theme="lpt-light"] {
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --muted: 210 40% 93%;
-  --muted-foreground: 215 20% 45%;
-  --border: 214 32% 85%;
-  --input: 214 32% 85%;
-}
-
 /* ─── Base ───────────────────────────────────────────────────────── */
 
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
   background-color: var(--fallback-b1, oklch(var(--b1)));
-  background-image: radial-gradient(ellipse 80% 60% at 50% -20%, oklch(var(--p) / 0.12) 0%, transparent 60%);
+  background-image: radial-gradient(ellipse 80% 60% at 50% -20%, oklch(var(--p) / 0.20) 0%, transparent 60%);
   background-attachment: fixed;
   min-height: 100vh;
   color: var(--fallback-bc, oklch(var(--bc)));
@@ -60,138 +22,135 @@ body {
   background-image: radial-gradient(ellipse 80% 60% at 50% -20%, oklch(var(--p) / 0.05) 0%, transparent 60%);
 }
 
-/* ─── Glass card ─────────────────────────────────────────────────── */
+/* ─── DaisyUI component overrides ───────────────────────────────── */
 
-.glass-card {
-  background: oklch(var(--b2) / 0.75);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid oklch(var(--bc) / 0.08);
+/* Card — fully opaque b2 so dark themes have clear contrast */
+.card {
+  background: oklch(var(--b2));
+  border: 1px solid oklch(var(--bc) / 0.1);
   border-radius: 14px;
-  box-shadow: 0 4px 24px oklch(0 0 0 / 0.25), inset 0 1px 0 oklch(var(--bc) / 0.06);
+  box-shadow: 0 4px 24px oklch(0 0 0 / 0.3), inset 0 1px 0 oklch(var(--bc) / 0.07);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
-.glass-card-hover:hover {
+.card:where(.hover\:shadow-xl):hover,
+.card.card-hover:hover {
   border-color: oklch(var(--p) / 0.28);
   box-shadow: 0 8px 32px oklch(0 0 0 / 0.3), 0 0 0 1px oklch(var(--p) / 0.1), inset 0 1px 0 oklch(var(--bc) / 0.08);
   transform: translateY(-1px);
 }
 
-[data-theme="lpt-light"] .glass-card {
+/* Light themes: use b1 (white) for cards so they pop above b1/b2 page */
+[data-theme="lpt-light"] .card {
   background: oklch(var(--b1));
-  border-color: oklch(var(--bc) / 0.1);
-  box-shadow: 0 1px 3px oklch(0 0 0 / 0.06), 0 4px 16px oklch(0 0 0 / 0.04);
+  border-color: oklch(var(--bc) / 0.09);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.06), 0 4px 16px oklch(0 0 0 / 0.05);
 }
 
-[data-theme="lpt-light"] .glass-card-hover:hover {
+[data-theme="lpt-light"] .card:where(.hover\:shadow-xl):hover,
+[data-theme="lpt-light"] .card.card-hover:hover {
   border-color: oklch(var(--p) / 0.3);
   box-shadow: 0 4px 20px oklch(var(--p) / 0.08);
   transform: translateY(-1px);
 }
 
-/* ─── Sidebar ────────────────────────────────────────────────────── */
-
-.glass-sidebar {
-  background: oklch(var(--b2) / 0.98);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border-right: 1px solid oklch(var(--bc) / 0.07);
-}
-
-[data-theme="lpt-light"] .glass-sidebar {
-  background: oklch(var(--b1));
-  border-right-color: oklch(var(--bc) / 0.1);
-  box-shadow: 2px 0 12px oklch(0 0 0 / 0.04);
-}
-
-/* ─── Buttons ────────────────────────────────────────────────────── */
-
-.btn-gradient {
+/* btn-primary — gradient */
+.btn-primary {
   background: linear-gradient(135deg, oklch(var(--p)) 0%, oklch(var(--s)) 100%);
-  color: #ffffff !important;
   border: none;
-  font-weight: 500;
-  font-size: 0.875rem;
-  letter-spacing: 0.01em;
-  transition: opacity 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   box-shadow: 0 2px 10px oklch(var(--p) / 0.4);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.btn-gradient:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: 0 4px 20px oklch(var(--p) / 0.5);
+  background: linear-gradient(135deg, oklch(var(--p)) 0%, oklch(var(--s)) 100%);
 }
 
-.btn-gradient:active:not(:disabled) {
+.btn-primary:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: 0 1px 6px oklch(var(--p) / 0.35);
 }
 
-.btn-gradient:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+/* Inputs — fully opaque b3 so dark themes have clear contrast */
+.input, .select, .textarea, .file-input {
+  background: oklch(var(--b3));
+  border-color: oklch(var(--bc) / 0.18);
+  color: oklch(var(--bc));
 }
 
-/* ─── Status badges ──────────────────────────────────────────────── */
-
-.badge-pass {
-  background: oklch(var(--su) / 0.15);
-  color: oklch(var(--su));
-  border: 1px solid oklch(var(--su) / 0.3);
+.input:focus, .select:focus, .textarea:focus {
+  border-color: oklch(var(--p) / 0.5);
+  box-shadow: 0 0 0 3px oklch(var(--p) / 0.1);
+  outline: none;
 }
 
-.badge-fail {
-  background: oklch(var(--er) / 0.15);
-  color: oklch(var(--er));
-  border: 1px solid oklch(var(--er) / 0.3);
+.select option {
+  background: oklch(var(--b2));
+  color: oklch(var(--bc));
 }
 
-.badge-pending {
-  background: oklch(var(--wa) / 0.15);
-  color: oklch(var(--wa));
-  border: 1px solid oklch(var(--wa) / 0.3);
+[data-theme="lpt-light"] .input,
+[data-theme="lpt-light"] .select,
+[data-theme="lpt-light"] .textarea,
+[data-theme="lpt-light"] .file-input {
+  background: oklch(var(--b1));
+  border-color: oklch(var(--bc) / 0.18);
 }
 
-.badge-open {
-  background: oklch(var(--in) / 0.15);
-  color: oklch(var(--in));
-  border: 1px solid oklch(var(--in) / 0.3);
+[data-theme="lpt-light"] .input:focus,
+[data-theme="lpt-light"] .select:focus,
+[data-theme="lpt-light"] .textarea:focus {
+  border-color: oklch(var(--p) / 0.4);
+  box-shadow: 0 0 0 3px oklch(var(--p) / 0.08);
 }
 
-.badge-closed {
-  background: oklch(var(--bc) / 0.06);
-  color: oklch(var(--bc) / 0.45);
-  border: 1px solid oklch(var(--bc) / 0.12);
+/* Table — keep zebra + hover */
+.table :where(thead tr th) {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: oklch(var(--bc) / 0.4);
 }
 
-.badge-assigned {
-  background: oklch(var(--in) / 0.15);
-  color: oklch(var(--in));
-  border: 1px solid oklch(var(--in) / 0.3);
+.table-zebra :where(tbody tr:nth-child(even)) {
+  background: oklch(var(--bc) / 0.025);
 }
 
-.badge-completed {
-  background: oklch(var(--su) / 0.15);
-  color: oklch(var(--su));
-  border: 1px solid oklch(var(--su) / 0.3);
+.table :where(tbody tr:hover) {
+  background: oklch(var(--bc) / 0.07);
 }
 
-/* ─── File input ─────────────────────────────────────────────────── */
+[data-theme="lpt-light"] .table-zebra :where(tbody tr:nth-child(even)) {
+  background: oklch(var(--bc) / 0.03);
+}
 
-.file-input-themed::file-selector-button { color: oklch(var(--p)); }
+[data-theme="lpt-light"] .table :where(tbody tr:hover) {
+  background: oklch(var(--bc) / 0.055);
+}
 
-/* ─── Hover-primary link ────────────────────────────────────────── */
+/* Sidebar */
+.drawer-side > .bg-base-100 {
+  background: oklch(var(--b2)) !important;
+}
 
-.hover-primary { transition: color 0.15s ease, background-color 0.15s ease; }
-.hover-primary:hover { color: oklch(var(--p)); background-color: oklch(var(--p) / 0.1); }
+/* Light themes: sidebar uses b1 */
+:where([data-theme="lpt-light"], [data-theme="light"], [data-theme="cupcake"],
+  [data-theme="bumblebee"], [data-theme="corporate"], [data-theme="retro"],
+  [data-theme="garden"], [data-theme="lofi"], [data-theme="pastel"],
+  [data-theme="fantasy"], [data-theme="wireframe"], [data-theme="lemonade"],
+  [data-theme="winter"], [data-theme="nord"], [data-theme="cmyk"]
+) .drawer-side > .bg-base-100 {
+  background: oklch(var(--b1)) !important;
+  box-shadow: 1px 0 8px oklch(0 0 0 / 0.05);
+}
+
+/* Navbar glass */
+.navbar {
+  backdrop-filter: blur(16px);
+}
 
 /* ─── Navigation ─────────────────────────────────────────────────── */
 
@@ -221,12 +180,6 @@ body {
   background-size: 1200px 100%;
   animation: skeleton-shimmer 1.8s ease-in-out infinite;
   border-radius: 8px;
-}
-
-/* ─── Stat card glow ─────────────────────────────────────────────── */
-
-.stat-card-glow {
-  box-shadow: 0 0 0 1px oklch(var(--p) / 0.12), 0 4px 24px oklch(var(--p) / 0.08), inset 0 1px 0 oklch(var(--bc) / 0.06);
 }
 
 /* ─── Diff highlighting ──────────────────────────────────────────── */
@@ -278,50 +231,8 @@ body {
 
 .page-enter { animation: page-fade-in 0.25s ease-out; }
 
-/* ─── DaisyUI table overrides ────────────────────────────────────── */
+/* ─── Recharts chart overrides for light theme ───────────────────── */
 
-.table th {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* ─── lpt-light overrides ────────────────────────────────────────── */
-/* Remap white-based utilities to base-content so text is visible     */
-
-[data-theme="lpt-light"] .text-white { color: oklch(var(--bc)); }
-[data-theme="lpt-light"] .text-white\/20 { color: oklch(var(--bc) / 0.3); }
-[data-theme="lpt-light"] .text-white\/25 { color: oklch(var(--bc) / 0.35); }
-[data-theme="lpt-light"] .text-white\/30 { color: oklch(var(--bc) / 0.4); }
-[data-theme="lpt-light"] .text-white\/35 { color: oklch(var(--bc) / 0.45); }
-[data-theme="lpt-light"] .text-white\/40 { color: oklch(var(--bc) / 0.5); }
-[data-theme="lpt-light"] .text-white\/50 { color: oklch(var(--bc) / 0.6); }
-[data-theme="lpt-light"] .text-white\/60 { color: oklch(var(--bc) / 0.65); }
-[data-theme="lpt-light"] .text-white\/70 { color: oklch(var(--bc) / 0.75); }
-[data-theme="lpt-light"] .text-white\/80 { color: oklch(var(--bc) / 0.85); }
-[data-theme="lpt-light"] .text-white\/85 { color: oklch(var(--bc) / 0.9); }
-
-[data-theme="lpt-light"] .border-white\/\[0\.07\] { border-color: oklch(var(--bc) / 0.1); }
-[data-theme="lpt-light"] .border-white\/\[0\.08\] { border-color: oklch(var(--bc) / 0.1); }
-[data-theme="lpt-light"] .border-white\/5  { border-color: oklch(var(--bc) / 0.07); }
-[data-theme="lpt-light"] .border-white\/10 { border-color: oklch(var(--bc) / 0.12); }
-[data-theme="lpt-light"] .border-white\/20 { border-color: oklch(var(--bc) / 0.18); }
-
-[data-theme="lpt-light"] .bg-white\/\[0\.04\] { background: oklch(var(--bc) / 0.03); }
-[data-theme="lpt-light"] .bg-white\/\[0\.06\] { background: oklch(var(--bc) / 0.05); }
-[data-theme="lpt-light"] .bg-white\/5  { background: oklch(var(--bc) / 0.04); }
-[data-theme="lpt-light"] .bg-white\/10 { background: oklch(var(--bc) / 0.08); }
-
-[data-theme="lpt-light"] .hover\:bg-white\/\[0\.06\]:hover { background: oklch(var(--bc) / 0.05); }
-[data-theme="lpt-light"] .hover\:bg-white\/\[0\.08\]:hover { background: oklch(var(--bc) / 0.06); }
-[data-theme="lpt-light"] .hover\:bg-white\/10:hover { background: oklch(var(--bc) / 0.08); }
-[data-theme="lpt-light"] .hover\:border-white\/20:hover { border-color: oklch(var(--bc) / 0.18); }
-[data-theme="lpt-light"] .hover\:text-white:hover { color: oklch(var(--bc)); }
-
-[data-theme="lpt-light"] .divide-white\/5 > * + * { border-color: oklch(var(--bc) / 0.08); }
-
-/* Recharts chart overrides for light theme */
 [data-theme="lpt-light"] .recharts-cartesian-grid line { stroke: oklch(var(--bc) / 0.1); }
 [data-theme="lpt-light"] .recharts-text { fill: oklch(var(--bc) / 0.55); }
 [data-theme="lpt-light"] .recharts-tooltip-wrapper .recharts-default-tooltip {
@@ -330,13 +241,194 @@ body {
   color: oklch(var(--bc)) !important;
 }
 
+/* ─── Built-in DaisyUI light themes — card uses b1 (white) ──────── */
+
+:where(
+  [data-theme="light"], [data-theme="cupcake"], [data-theme="bumblebee"],
+  [data-theme="corporate"], [data-theme="retro"], [data-theme="garden"],
+  [data-theme="lofi"], [data-theme="pastel"], [data-theme="fantasy"],
+  [data-theme="wireframe"], [data-theme="lemonade"], [data-theme="winter"],
+  [data-theme="nord"], [data-theme="cmyk"]
+) .card {
+  background: oklch(var(--b1));
+  border-color: oklch(var(--bc) / 0.09);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.06), 0 4px 16px oklch(0 0 0 / 0.05);
+}
+
+:where(
+  [data-theme="light"], [data-theme="cupcake"], [data-theme="bumblebee"],
+  [data-theme="corporate"], [data-theme="retro"], [data-theme="garden"],
+  [data-theme="lofi"], [data-theme="pastel"], [data-theme="fantasy"],
+  [data-theme="wireframe"], [data-theme="lemonade"], [data-theme="winter"],
+  [data-theme="nord"], [data-theme="cmyk"]
+) :where(.input, .select, .textarea, .file-input) {
+  background: oklch(var(--b1));
+  border-color: oklch(var(--bc) / 0.2);
+}
+
 /* ─── Amplify UI overrides ───────────────────────────────────────── */
 
 [data-amplify-authenticator] {
+  /* Brand / interactive colors */
   --amplify-colors-brand-primary-80: oklch(var(--p));
   --amplify-colors-brand-primary-90: oklch(var(--p) / 0.9);
   --amplify-colors-brand-primary-100: oklch(var(--p) / 0.8);
+
+  /* Remove Amplify's own card chrome — our .card wrapper handles it */
   --amplify-colors-background-primary: transparent;
-  --amplify-colors-background-secondary: oklch(var(--b2) / 0.7);
-  --amplify-components-authenticator-container-width-max: 420px;
+  --amplify-colors-background-secondary: transparent;
+  --amplify-components-authenticator-container-width-max: 100%;
+  --amplify-components-authenticator-router-border-width: 0;
+  --amplify-components-authenticator-router-box-shadow: none;
+  --amplify-components-authenticator-router-background-color: transparent;
+
+  /* Typography */
+  --amplify-colors-font-primary: oklch(var(--bc));
+  --amplify-colors-font-secondary: oklch(var(--bc) / 0.55);
+  --amplify-colors-font-interactive: oklch(var(--p));
+  --amplify-colors-font-hover: oklch(var(--p));
+  --amplify-colors-font-focus: oklch(var(--p));
+
+  /* Input fields */
+  --amplify-components-fieldcontrol-color: oklch(var(--bc));
+  --amplify-components-fieldcontrol-background-color: oklch(var(--b3));
+  --amplify-components-fieldcontrol-border-color: oklch(var(--bc) / 0.14);
+  --amplify-components-fieldcontrol-border-radius: 0.5rem;
+  --amplify-components-fieldcontrol-focus-border-color: oklch(var(--p) / 0.5);
+  --amplify-components-fieldcontrol-focus-box-shadow: 0 0 0 3px oklch(var(--p) / 0.1);
+  --amplify-components-fieldcontrol-placeholder-color: oklch(var(--bc) / 0.3);
+
+  /* Labels */
+  --amplify-components-label-color: oklch(var(--bc) / 0.65);
+  --amplify-components-label-font-size: 0.8125rem;
+
+  /* Tabs */
+  --amplify-components-tabs-background-color: transparent;
+  --amplify-components-tabs-border-color: oklch(var(--bc) / 0.1);
+  --amplify-components-tabs-item-background-color: transparent;
+  --amplify-components-tabs-item-active-background-color: transparent;
+  --amplify-components-tabs-item-color: oklch(var(--bc) / 0.4);
+  --amplify-components-tabs-item-hover-color: oklch(var(--bc) / 0.8);
+  --amplify-components-tabs-item-focus-color: oklch(var(--bc));
+  --amplify-components-tabs-item-active-color: oklch(var(--bc));
+  --amplify-components-tabs-item-active-border-color: oklch(var(--p));
+  --amplify-components-tabs-item-font-weight: 500;
+
+  /* Buttons */
+  --amplify-components-button-primary-background-color: oklch(var(--p));
+  --amplify-components-button-primary-color: oklch(var(--pc));
+  --amplify-components-button-primary-hover-background-color: oklch(var(--p) / 0.85);
+  --amplify-components-button-border-radius: 0.5rem;
+  --amplify-components-button-link-color: oklch(var(--p));
+  --amplify-components-button-link-hover-color: oklch(var(--p) / 0.75);
+}
+
+/* Strip Amplify's inner router chrome */
+[data-amplify-authenticator] [data-amplify-router] {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Tabs container — let Amplify control layout, only set background */
+[data-amplify-authenticator] .amplify-tabs {
+  background: transparent !important;
+}
+
+/* Inner form content padding */
+[data-amplify-authenticator] [data-amplify-router-content] {
+  padding: 1.75rem 2rem 2rem !important;
+}
+
+/* Regular inputs (email, text fields) */
+[data-amplify-authenticator] .amplify-input {
+  background: oklch(var(--b3)) !important;
+  border: 1px solid oklch(var(--bc) / 0.14) !important;
+  color: oklch(var(--bc)) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.625rem 0.875rem !important;
+  width: 100% !important;
+}
+
+[data-amplify-authenticator] .amplify-input:focus {
+  border-color: oklch(var(--p) / 0.5) !important;
+  box-shadow: 0 0 0 3px oklch(var(--p) / 0.1) !important;
+  outline: none !important;
+}
+
+/* Password field — make input + eye button a single integrated group */
+[data-amplify-authenticator] .amplify-field-group {
+  border: 1px solid oklch(var(--bc) / 0.18) !important;
+  border-radius: 0.5rem !important;
+  background: oklch(var(--b3)) !important;
+  overflow: hidden !important;
+  display: flex !important;
+}
+
+[data-amplify-authenticator] .amplify-field-group:focus-within {
+  border-color: oklch(var(--p) / 0.5) !important;
+  box-shadow: 0 0 0 3px oklch(var(--p) / 0.1) !important;
+}
+
+[data-amplify-authenticator] .amplify-field-group .amplify-input {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  flex: 1 !important;
+}
+
+[data-amplify-authenticator] .amplify-field-group .amplify-field-group__control,
+[data-amplify-authenticator] .amplify-field-group button {
+  background: transparent !important;
+  border: none !important;
+  border-left: 1px solid oklch(var(--bc) / 0.1) !important;
+  color: oklch(var(--bc) / 0.5) !important;
+  padding: 0 0.75rem !important;
+  cursor: pointer !important;
+  border-radius: 0 !important;
+}
+
+[data-amplify-authenticator] .amplify-field-group button:hover {
+  color: oklch(var(--bc)) !important;
+  background: oklch(var(--bc) / 0.05) !important;
+}
+
+/* Primary button → match our .btn-primary gradient */
+[data-amplify-authenticator] .amplify-button--primary {
+  background: linear-gradient(135deg, oklch(var(--p)) 0%, oklch(var(--s)) 100%) !important;
+  border: none !important;
+  box-shadow: 0 2px 10px oklch(var(--p) / 0.4) !important;
+  border-radius: 0.5rem !important;
+  color: oklch(var(--pc)) !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1rem !important;
+  width: 100% !important;
+  cursor: pointer !important;
+  transition: opacity 0.15s, box-shadow 0.15s !important;
+}
+
+[data-amplify-authenticator] .amplify-button--primary:hover {
+  opacity: 0.9 !important;
+  box-shadow: 0 4px 20px oklch(var(--p) / 0.5) !important;
+}
+
+/* Forgot password / link buttons */
+[data-amplify-authenticator] .amplify-button--link {
+  color: oklch(var(--p)) !important;
+  background: transparent !important;
+  font-size: 0.8125rem !important;
+}
+
+[data-amplify-authenticator] .amplify-button--link:hover {
+  color: oklch(var(--p) / 0.75) !important;
+  background: transparent !important;
+}
+
+/* Error / alert messages */
+[data-amplify-authenticator] .amplify-alert--error {
+  background: oklch(var(--er) / 0.1) !important;
+  border: 1px solid oklch(var(--er) / 0.2) !important;
+  border-radius: 0.5rem !important;
+  color: oklch(var(--er)) !important;
 }

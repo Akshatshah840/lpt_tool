@@ -54,9 +54,9 @@ export default {
           'accent-content': '#ffffff',
           neutral: '#1e293b',
           'neutral-content': '#94a3b8',
-          'base-100': '#07090f',
-          'base-200': '#0c1221',
-          'base-300': '#111827',
+          'base-100': '#070b14',  // page bg — deepest dark
+          'base-200': '#0f1729',  // card bg — clearly lighter
+          'base-300': '#1a2744',  // input bg — even lighter
           'base-content': '#e2e8f0',
           info: '#3b82f6',
           'info-content': '#ffffff',
@@ -78,9 +78,9 @@ export default {
           'accent-content': '#ffffff',
           neutral: '#334155',
           'neutral-content': '#cbd5e1',
-          'base-100': '#0d1117',
-          'base-200': '#161b22',
-          'base-300': '#21262d',
+          'base-100': '#0d1117',  // page bg
+          'base-200': '#1c2334',  // card bg — clearly lighter
+          'base-300': '#28333f',  // input bg — even lighter
           'base-content': '#e6edf3',
           info: '#58a6ff',
           'info-content': '#000000',
@@ -102,9 +102,9 @@ export default {
           'accent-content': '#ffffff',
           neutral: '#2d1b20',
           'neutral-content': '#fda4af',
-          'base-100': '#0f0508',
-          'base-200': '#1a0b0e',
-          'base-300': '#261018',
+          'base-100': '#0f0508',  // page bg
+          'base-200': '#21101a',  // card bg — clearly lighter
+          'base-300': '#32192a',  // input bg — even lighter
           'base-content': '#fce4e9',
           info: '#38bdf8',
           'info-content': '#000000',
@@ -126,9 +126,9 @@ export default {
           'accent-content': '#ffffff',
           neutral: '#1a2e22',
           'neutral-content': '#6ee7b7',
-          'base-100': '#05100a',
-          'base-200': '#0a1c13',
-          'base-300': '#0f281c',
+          'base-100': '#05100a',  // page bg
+          'base-200': '#0d2217',  // card bg — clearly lighter
+          'base-300': '#163828',  // input bg — even lighter
           'base-content': '#d1fae5',
           info: '#38bdf8',
           'info-content': '#000000',
@@ -164,6 +164,11 @@ export default {
           'error-content': '#ffffff',
         },
       },
+      'light', 'dark', 'cupcake', 'bumblebee', 'emerald', 'corporate',
+      'synthwave', 'retro', 'cyberpunk', 'valentine', 'halloween', 'garden',
+      'forest', 'aqua', 'lofi', 'pastel', 'fantasy', 'wireframe', 'black',
+      'luxury', 'dracula', 'cmyk', 'autumn', 'business', 'acid', 'lemonade',
+      'night', 'coffee', 'winter', 'dim', 'nord', 'sunset',
     ],
     darkTheme: 'lpt-indigo',
     base: true,

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ClipboardList, CheckCircle, Clock, TrendingUp, FolderOpen, FolderX } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { GlassCard } from '@/components/shared/GlassCard';
+import { StatCard } from '@/components/shared/StatCard';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate, werToAccuracy } from '@/lib/utils';
@@ -19,6 +22,7 @@ export function ProjectAdminDashboard() {
     id: string; userName?: string | null; testName: string; passed?: boolean | null; completedAt?: string | null; overallWer?: number | null;
   }>>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [chartData, setChartData] = useState<{ name: string; pass: number; fail: number }[]>([]);
   const [toggling, setToggling] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +50,16 @@ export function ProjectAdminDashboard() {
             testName: tests.find((t: { id: string; name: string }) => t.id === r.testId)?.name ?? r.testId,
           }))
         );
+        const testMap: Record<string, { name: string; pass: number; fail: number }> = {};
+        for (const r of completed) {
+          const rid = (r as { testId: string }).testId;
+          if (!testMap[rid]) {
+            const test = tests.find((t: { id: string; name: string }) => t.id === rid);
+            testMap[rid] = { name: test?.name?.slice(0, 15) ?? rid.slice(0, 8), pass: 0, fail: 0 };
+          }
+          if (r.passed) testMap[rid].pass++; else testMap[rid].fail++;
+        }
+        setChartData(Object.values(testMap).slice(0, 8));
         setProjects((projectsRes.data ?? []) as Project[]);
       } finally {
         setLoading(false);
@@ -68,44 +82,30 @@ export function ProjectAdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-white/40 text-sm mt-1">Overview of your tests and recent activity</p>
+        <h1 className="text-2xl font-bold text-base-content">Dashboard</h1>
+        <p className="text-base-content/40 text-sm mt-1">Overview of your tests and recent activity</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { icon: <ClipboardList size={20} />, label: 'Total Tests', value: stats.tests, colorVar: '--p' },
-          { icon: <Clock size={20} />, label: 'Open Tests', value: stats.open, colorVar: '--s' },
-          { icon: <CheckCircle size={20} />, label: 'Completed', value: stats.results, colorVar: '--su' },
-          { icon: <TrendingUp size={20} />, label: 'Pass Rate', value: `${stats.passRate}%`, colorVar: '--wa' },
-        ].map(s => (
-          <GlassCard key={s.label} glow className="p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-white/50 text-xs">{s.label}</p>
-                <p className="text-2xl font-bold text-white mt-0.5">{loading ? '—' : s.value}</p>
-              </div>
-              <div className="p-2 rounded-lg" style={{ background: `oklch(var(${s.colorVar}) / 0.13)`, border: `1px solid oklch(var(${s.colorVar}) / 0.2)` }}>
-                <span style={{ color: `oklch(var(${s.colorVar}))` }}>{s.icon}</span>
-              </div>
-            </div>
-          </GlassCard>
-        ))}
+        <StatCard icon={<ClipboardList size={20} />} label="Total Tests" value={stats.tests} colorVar="--p" loading={loading} />
+        <StatCard icon={<Clock size={20} />} label="Open Tests" value={stats.open} colorVar="--s" loading={loading} />
+        <StatCard icon={<CheckCircle size={20} />} label="Completed" value={stats.results} colorVar="--su" loading={loading} />
+        <StatCard icon={<TrendingUp size={20} />} label="Pass Rate" value={`${stats.passRate}%`} colorVar="--wa" loading={loading} />
       </div>
 
       {/* Projects */}
       <GlassCard className="p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Projects</h2>
+        <h2 className="text-lg font-semibold text-base-content mb-4">Projects</h2>
         {loading ? (
-          <div className="space-y-2">{[...Array(2)].map((_, i) => <div key={i} className="h-14 skeleton rounded" />)}</div>
+          <div className="space-y-2">{[...Array(2)].map((_, i) => <div key={i} className="h-[60px] skeleton rounded-lg" />)}</div>
         ) : projects.length === 0 ? (
-          <p className="text-white/30 text-sm py-4 text-center">No projects found.</p>
+          <p className="text-base-content/30 text-sm py-6 text-center">No projects yet. Create one in Projects.</p>
         ) : (
           <div className="space-y-3">
             {projects.map(p => {
               const isOpen = p.status === 'OPEN';
               return (
-                <div key={p.id} className="flex items-center justify-between py-3 px-4 rounded-lg bg-white/5 border border-white/5">
+                <div key={p.id} className="flex items-center justify-between py-3 px-4 rounded-lg bg-base-content/[0.04] border border-base-content/[0.05]">
                   <div className="flex items-center gap-3">
                     <div className="p-1.5 rounded-lg" style={{ background: isOpen ? 'oklch(var(--su) / 0.1)' : 'oklch(var(--er) / 0.1)' }}>
                       {isOpen
@@ -114,18 +114,16 @@ export function ProjectAdminDashboard() {
                       }
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{p.name}</p>
-                      {p.description && <p className="text-xs text-white/40">{p.description}</p>}
+                      <p className="text-sm font-medium text-base-content">{p.name}</p>
+                      {p.description && <p className="text-xs text-base-content/40">{p.description}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold tracking-wide inline-flex items-center ${isOpen ? 'badge-pass' : 'badge-closed'}`}>
-                      {p.status}
-                    </span>
+                    <StatusBadge status={p.status as 'OPEN' | 'CLOSED'} />
                     <button
                       onClick={() => toggleProject(p)}
                       disabled={toggling === p.id}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all border border-white/10 text-white/60 hover:text-white hover:bg-white/10 disabled:opacity-50"
+                      className="btn btn-ghost btn-xs border border-base-content/10 disabled:opacity-50"
                     >
                       {toggling === p.id ? '…' : isOpen ? 'Close' : 'Open'}
                     </button>
@@ -137,24 +135,49 @@ export function ProjectAdminDashboard() {
         )}
       </GlassCard>
 
+      {chartData.length > 0 && (
+        <GlassCard className="p-6">
+          <h2 className="text-lg font-semibold text-base-content mb-4">Pass / Fail by Test</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={chartData} barGap={4}>
+              <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--bc) / 0.08)" />
+              <XAxis dataKey="name" tick={{ fill: 'oklch(var(--bc) / 0.5)', fontSize: 12 }} />
+              <YAxis tick={{ fill: 'oklch(var(--bc) / 0.5)', fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{ background: 'oklch(var(--b2))', border: '1px solid oklch(var(--bc) / 0.1)', borderRadius: '8px' }}
+                labelStyle={{ color: 'oklch(var(--bc))' }}
+              />
+              <Bar dataKey="pass" name="Pass" fill="#22c55e" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="fail" name="Fail" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </GlassCard>
+      )}
+
       <GlassCard className="p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Recent Results</h2>
+        <h2 className="text-lg font-semibold text-base-content mb-4">Recent Results</h2>
         {loading ? (
-          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-10 skeleton rounded" />)}</div>
+          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-10 skeleton rounded-lg" />)}</div>
         ) : recentResults.length === 0 ? (
-          <p className="text-white/30 text-sm py-4 text-center">No results yet.</p>
+          <p className="text-base-content/30 text-sm py-6 text-center">No results yet — transcribers haven't completed any tests.</p>
         ) : (
           <div className="space-y-2">
             {recentResults.map(r => (
-              <div key={r.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+              <div key={r.id} className="flex items-center justify-between py-2 border-b border-base-content/[0.05] last:border-0">
                 <div>
-                  <span className="text-sm text-white">{r.userName ?? 'Unknown'}</span>
-                  <span className="text-white/30 text-xs ml-2">— {r.testName}</span>
+                  <span className="text-sm text-base-content">{r.userName ?? 'Unknown'}</span>
+                  <span className="text-base-content/30 text-xs ml-2">— {r.testName}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-white/40">{werToAccuracy(r.overallWer)}</span>
+                  <span className="text-xs text-base-content/40">{werToAccuracy(r.overallWer)}</span>
                   <StatusBadge status={r.passed} />
-                  <span className="text-xs text-white/30">{formatDate(r.completedAt)}</span>
+                  <span className="text-xs text-base-content/30">{formatDate(r.completedAt)}</span>
+                  <Link
+                    to={`/project/results/${r.id}`}
+                    className="btn btn-primary btn-xs gap-1"
+                  >
+                    View
+                  </Link>
                 </div>
               </div>
             ))}

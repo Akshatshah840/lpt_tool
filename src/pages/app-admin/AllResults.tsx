@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { BarChart2, Search } from 'lucide-react';
+import { BarChart2, Search, Loader2 } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ExportButton } from '@/components/shared/ExportButton';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
@@ -25,7 +26,8 @@ export function AppAdminAllResults() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [nextToken, setNextToken] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [tests, setTests] = useState<Array<{ id: string; name: string }>>([]);
 
   useEffect(() => {
     async function load() {
@@ -34,10 +36,11 @@ export function AppAdminAllResults() {
           client.models.TestResult.list({ limit: 50 }),
           client.models.Test.list(),
         ]);
-        const tests = testsRes.data ?? [];
+        const allTests = testsRes.data ?? [];
+        setTests(allTests as Array<{ id: string; name: string }>);
         const enriched = (resultsRes.data ?? []).map(r => ({
           ...r,
-          testName: tests.find(t => t.id === r.testId)?.name ?? r.testId,
+          testName: allTests.find(t => t.id === r.testId)?.name ?? r.testId,
         }));
         setResults(enriched as Result[]);
         setNextToken((resultsRes as { nextToken?: string }).nextToken ?? null);
@@ -50,6 +53,24 @@ export function AppAdminAllResults() {
     load();
   }, []);
 
+  async function loadMore() {
+    if (!nextToken || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const resultsRes = await client.models.TestResult.list({ limit: 50, nextToken } as Parameters<typeof client.models.TestResult.list>[0]);
+      const enriched = (resultsRes.data ?? []).map(r => ({
+        ...r,
+        testName: tests.find(t => t.id === r.testId)?.name ?? r.testId,
+      }));
+      setResults(prev => [...prev, ...enriched as Result[]]);
+      setNextToken((resultsRes as { nextToken?: string }).nextToken ?? null);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   const filtered = results.filter(r => {
     const q = search.toLowerCase();
     return !q || [r.userName, r.userEmail, r.testName].some(s => s?.toLowerCase().includes(q));
@@ -59,16 +80,16 @@ export function AppAdminAllResults() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">All Results</h1>
-          <p className="text-white/40 text-sm mt-1">Global view of all transcription results</p>
+          <h1 className="text-2xl font-bold text-base-content">All Results</h1>
+          <p className="text-base-content/40 text-sm mt-1">Global view of all transcription results</p>
         </div>
         <ExportButton />
       </div>
 
       <GlassCard className="p-4 flex items-center gap-3">
-        <Search size={16} className="text-white/40" />
+        <Search size={16} className="text-base-content/40" />
         <input
-          className="bg-transparent flex-1 text-sm text-white placeholder-white/30 outline-none"
+          className="bg-transparent flex-1 text-sm text-base-content placeholder-base-content/30 outline-none"
           placeholder="Search by name, email, or test…"
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -76,49 +97,59 @@ export function AppAdminAllResults() {
       </GlassCard>
 
       {loading ? (
-        <GlassCard className="p-6 h-64 skeleton" />
+        <div className="space-y-2">{[...Array(8)].map((_, i) => <div key={i} className="h-12 skeleton rounded-lg" />)}</div>
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={<BarChart2 size={24} />}
+          heading="No results found"
+          description={search ? 'Try adjusting your search terms.' : 'Transcribers haven\'t completed any tests yet.'}
+        />
       ) : (
         <GlassCard className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="table table-zebra">
               <thead>
-                <tr className="border-b border-white/10">
+                <tr>
                   {['Transcriber', 'Test', 'Status', 'Accuracy', 'Pass/Fail', 'Completed'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
-                      {h}
-                    </th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-white/30">
-                      <BarChart2 size={32} className="mx-auto mb-2 opacity-30" />
-                      No results found.
+              <tbody>
+                {filtered.map(r => (
+                  <tr key={r.id}>
+                    <td>
+                      <div className="text-sm font-medium text-base-content">{r.userName ?? '—'}</div>
+                      <div className="text-xs text-base-content/40">{r.userEmail ?? '—'}</div>
                     </td>
-                  </tr>
-                ) : filtered.map(r => (
-                  <tr key={r.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-white">{r.userName ?? '—'}</div>
-                      <div className="text-xs text-white/40">{r.userEmail ?? '—'}</div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-white/70">{r.testName}</td>
-                    <td className="px-4 py-3">
+                    <td className="text-sm text-base-content/70">{r.testName}</td>
+                    <td>
                       <StatusBadge status={r.status as 'COMPLETED' | 'IN_PROGRESS' | 'PENDING'} />
                     </td>
-                    <td className="px-4 py-3 text-sm text-white/70">{werToAccuracy(r.overallWer)}</td>
-                    <td className="px-4 py-3">
+                    <td className="text-sm text-base-content/70">{werToAccuracy(r.overallWer)}</td>
+                    <td>
                       {r.status === 'COMPLETED' ? <StatusBadge status={r.passed} /> : '—'}
                     </td>
-                    <td className="px-4 py-3 text-xs text-white/40">{formatDate(r.completedAt)}</td>
+                    <td className="text-xs text-base-content/40">{formatDate(r.completedAt)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </GlassCard>
+      )}
+
+      {nextToken && (
+        <div className="flex justify-center">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="btn btn-primary btn-sm gap-2 disabled:opacity-50"
+          >
+            {loadingMore ? <Loader2 size={16} className="animate-spin" /> : null}
+            {loadingMore ? 'Loading…' : 'Load More'}
+          </button>
+        </div>
       )}
     </div>
   );

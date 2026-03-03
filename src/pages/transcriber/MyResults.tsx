@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckSquare, Eye } from 'lucide-react';
+import { CheckSquare, CheckCircle, TrendingUp, Eye } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
+import { StatCard } from '@/components/shared/StatCard';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate, werToAccuracy } from '@/lib/utils';
@@ -55,69 +57,64 @@ export function TranscriberMyResults({ userId }: MyResultsProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">My Results</h1>
-        <p className="text-white/40 text-sm mt-1">Your transcription test history</p>
+        <h1 className="text-2xl font-bold text-base-content">My Results</h1>
+        <p className="text-base-content/40 text-sm mt-1">Your transcription test history</p>
       </div>
 
       {/* Summary */}
       {!loading && completed.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: 'Tests Completed', value: completed.length, colorVar: '--p' },
-            { label: 'Tests Passed', value: passed.length, colorVar: '--su' },
-            { label: 'Pass Rate', value: `${passRate}%`, colorVar: '--wa' },
-          ].map(s => (
-            <GlassCard key={s.label} glow className="p-5 text-center">
-              <p className="text-2xl font-bold" style={{ color: `oklch(var(${s.colorVar}))` }}>{s.value}</p>
-              <p className="text-white/40 text-sm mt-1">{s.label}</p>
-            </GlassCard>
-          ))}
+          <StatCard icon={<CheckSquare size={20} />} label="Tests Completed" value={completed.length} colorVar="--p" />
+          <StatCard icon={<CheckCircle size={20} />} label="Tests Passed" value={passed.length} colorVar="--su" />
+          <StatCard icon={<TrendingUp size={20} />} label="Pass Rate" value={`${passRate}%`} colorVar="--wa" />
         </div>
       )}
 
       {loading ? (
-        <div className="space-y-3">{[...Array(4)].map((_, i) => <GlassCard key={i} className="p-5 h-20 skeleton" />)}</div>
+        <div className="space-y-2">{[...Array(4)].map((_, i) => <div key={i} className="h-12 skeleton rounded-lg" />)}</div>
       ) : results.length === 0 ? (
-        <GlassCard className="p-12 text-center">
-          <CheckSquare size={40} className="text-white/20 mx-auto mb-3" />
-          <p className="text-white/40 font-medium">No results yet</p>
-          <p className="text-white/30 text-sm mt-1">Complete a test to see your results here.</p>
-        </GlassCard>
+        <EmptyState
+          icon={<CheckSquare size={24} />}
+          heading="No results yet"
+          description="Complete a test to see your history and accuracy scores here."
+        />
       ) : (
         <GlassCard className="overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10">
-                {['Test', 'Language', 'Status', 'Accuracy', 'Pass/Fail', 'Completed', ''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {results.map(r => (
-                <tr key={r.id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-4 py-3 text-sm text-white font-medium">{r.testName}</td>
-                  <td className="px-4 py-3 text-sm text-white/60">{r.languageCode}</td>
-                  <td className="px-4 py-3"><StatusBadge status={r.status as 'COMPLETED' | 'IN_PROGRESS' | 'PENDING'} /></td>
-                  <td className="px-4 py-3 text-sm text-white/70">{werToAccuracy(r.overallWer)}</td>
-                  <td className="px-4 py-3">
-                    {r.status === 'COMPLETED' ? <StatusBadge status={r.passed} /> : <span className="text-white/30">—</span>}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-white/40">{formatDate(r.completedAt)}</td>
-                  <td className="px-4 py-3">
-                    {r.status === 'COMPLETED' && (
-                      <Link
-                        to={`/transcriber/result/${r.id}`}
-                        className="p-1.5 rounded text-white/30 hover-primary inline-flex"
-                      >
-                        <Eye size={14} />
-                      </Link>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="table table-zebra">
+              <thead>
+                <tr>
+                  {['Test', 'Language', 'Status', 'Accuracy', 'Pass/Fail', 'Completed', ''].map(h => (
+                    <th key={h}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {results.map(r => (
+                  <tr key={r.id}>
+                    <td className="text-sm text-base-content font-medium">{r.testName}</td>
+                    <td className="text-sm text-base-content/60">{r.languageCode}</td>
+                    <td><StatusBadge status={r.status as 'COMPLETED' | 'IN_PROGRESS' | 'PENDING'} /></td>
+                    <td className="text-sm text-base-content/70">{werToAccuracy(r.overallWer)}</td>
+                    <td>
+                      {r.status === 'COMPLETED' ? <StatusBadge status={r.passed} /> : <span className="text-base-content/30">—</span>}
+                    </td>
+                    <td className="text-xs text-base-content/40">{formatDate(r.completedAt)}</td>
+                    <td>
+                      {r.status === 'COMPLETED' && (
+                        <Link
+                          to={`/transcriber/result/${r.id}`}
+                          className="btn btn-ghost btn-xs btn-square text-base-content/30 hover:text-primary hover:bg-primary/10"
+                        >
+                          <Eye size={14} />
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </GlassCard>
       )}
     </div>

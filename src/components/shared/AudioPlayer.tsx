@@ -94,8 +94,6 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-
   return (
     <div
       className={cn('audio-player select-none', className)}
@@ -114,7 +112,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
         {/* Restart */}
         <button
           onClick={handleRestart}
-          className="p-2 rounded-full hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+          className="btn btn-ghost btn-xs btn-circle text-base-content/60"
           title="Restart"
         >
           <RotateCcw size={16} />
@@ -123,7 +121,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
         {/* Play / Pause */}
         <button
           onClick={togglePlay}
-          className="p-3 rounded-full btn-gradient shadow-lg"
+          className="btn btn-circle btn-primary btn-md shadow-lg"
           title={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
@@ -138,9 +136,9 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
             step={0.1}
             value={currentTime}
             onChange={handleSeek}
-            className="w-full h-1.5 accent-[oklch(var(--p))] cursor-pointer"
+            className="range range-xs range-primary cursor-pointer"
           />
-          <div className="flex justify-between text-xs text-white/40">
+          <div className="flex justify-between text-xs text-base-content/40">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -148,7 +146,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
 
         {/* Volume */}
         <div className="flex items-center gap-1.5">
-          <Volume2 size={14} className="text-white/40" />
+          <Volume2 size={14} className="text-base-content/40" />
           <input
             type="range"
             min={0}
@@ -156,7 +154,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
             step={0.05}
             value={volume}
             onChange={handleVolume}
-            className="w-16 h-1.5 accent-[oklch(var(--p))] cursor-pointer"
+            className="range range-xs range-primary w-16 cursor-pointer"
           />
         </div>
       </div>

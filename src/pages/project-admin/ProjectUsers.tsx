@@ -78,15 +78,12 @@ export function ProjectAdminProjectUsers() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link
-          to="/project/projects"
-          className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
-        >
+        <Link to="/project/projects" className="btn btn-ghost btn-sm btn-square">
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Project Users</h1>
-          <p className="text-white/40 text-sm mt-0.5">{projectName}</p>
+          <h1 className="text-2xl font-bold text-base-content">Project Users</h1>
+          <p className="text-base-content/40 text-sm mt-0.5">{projectName}</p>
         </div>
       </div>
 
@@ -99,7 +96,7 @@ export function ProjectAdminProjectUsers() {
           { label: 'Pass Rate',    value: completed.length ? `${Math.round(passed.length / completed.length * 100)}%` : '—', color: '#f97316' },
         ].map(s => (
           <GlassCard key={s.label} glow className="p-5">
-            <p className="text-xs text-white/50">{s.label}</p>
+            <p className="text-xs text-base-content/50">{s.label}</p>
             <p className="text-2xl font-bold mt-0.5" style={{ color: s.color }}>
               {loading ? '—' : s.value}
             </p>
@@ -110,76 +107,71 @@ export function ProjectAdminProjectUsers() {
       {/* User list */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 size={28} className="animate-spin text-indigo-400" />
+          <Loader2 size={28} className="animate-spin text-primary" />
         </div>
       ) : users.length === 0 ? (
         <GlassCard className="p-12 text-center">
-          <Users size={40} className="text-white/20 mx-auto mb-3" />
-          <p className="text-white/40 font-medium">No users have started this project yet</p>
-          <p className="text-white/25 text-sm mt-1">
+          <Users size={40} className="text-base-content/20 mx-auto mb-3" />
+          <p className="text-base-content/40 font-medium">No users have started this project yet</p>
+          <p className="text-base-content/25 text-sm mt-1">
             Once transcribers begin the test, they will appear here.
           </p>
         </GlassCard>
       ) : (
         <GlassCard className="overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10">
-                {['User', 'Status', 'Accuracy', 'Result', 'Completed', ''].map(h => (
-                  <th
-                    key={h}
-                    className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {users.map(u => (
-                <tr key={u.userId} className="hover:bg-white/[0.03] transition-colors">
-                  <td className="px-4 py-3">
-                    <p className="text-sm font-medium text-white">{u.userName ?? '—'}</p>
-                    <p className="text-xs text-white/40">{u.userEmail ?? ''}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={u.status as 'IN_PROGRESS' | 'COMPLETED'} />
-                  </td>
-                  <td className="px-4 py-3 text-sm text-white/60">
-                    {u.status === 'COMPLETED' ? werToAccuracy(u.overallWer) : '—'}
-                  </td>
-                  <td className="px-4 py-3">
-                    {u.status === 'COMPLETED' ? (
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle2
-                          size={14}
-                          className={u.passed ? 'text-emerald-400' : 'text-red-400'}
-                        />
-                        <StatusBadge status={u.passed} />
-                      </div>
-                    ) : (
-                      <span className="text-white/20 text-xs">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-white/40">
-                    {u.status === 'COMPLETED' ? formatDate(u.completedAt) : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {u.status === 'COMPLETED' && (
-                      <Link
-                        to={`/project/results/${u.resultId}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
-                          bg-indigo-500/10 text-indigo-300 border border-indigo-500/20
-                          hover:bg-indigo-500/20 transition-all"
-                      >
-                        <Eye size={12} /> View
-                      </Link>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="table table-zebra">
+              <thead>
+                <tr>
+                  {['User', 'Status', 'Accuracy', 'Result', 'Completed', ''].map(h => (
+                    <th key={h}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u.userId}>
+                    <td>
+                      <p className="text-sm font-medium text-base-content">{u.userName ?? '—'}</p>
+                      <p className="text-xs text-base-content/40">{u.userEmail ?? ''}</p>
+                    </td>
+                    <td>
+                      <StatusBadge status={u.status as 'IN_PROGRESS' | 'COMPLETED'} />
+                    </td>
+                    <td className="text-sm text-base-content/60">
+                      {u.status === 'COMPLETED' ? werToAccuracy(u.overallWer) : '—'}
+                    </td>
+                    <td>
+                      {u.status === 'COMPLETED' ? (
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2
+                            size={14}
+                            className={u.passed ? 'text-success' : 'text-error'}
+                          />
+                          <StatusBadge status={u.passed} />
+                        </div>
+                      ) : (
+                        <span className="text-base-content/20 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="text-xs text-base-content/40">
+                      {u.status === 'COMPLETED' ? formatDate(u.completedAt) : '—'}
+                    </td>
+                    <td className="text-right">
+                      {u.status === 'COMPLETED' && (
+                        <Link
+                          to={`/project/results/${u.resultId}`}
+                          className="btn btn-primary btn-xs gap-1"
+                        >
+                          <Eye size={12} /> View
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </GlassCard>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Send, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { AudioPlayer } from '@/components/shared/AudioPlayer';
@@ -28,7 +28,7 @@ interface TakeTestProps {
   userEmail: string | null;
 }
 
-type TestPhase = 'loading' | 'taking' | 'submitting' | 'result';
+type TestPhase = 'loading' | 'expired' | 'taking' | 'submitting' | 'result';
 
 export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestProps) {
   const { testId } = useParams<{ testId: string }>();
@@ -54,7 +54,8 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
 
       // Check expiry
       if (testRes.data.expiresAt && new Date(testRes.data.expiresAt) < new Date()) {
-        navigate('/transcriber/dashboard', { replace: true });
+        setPhase('expired');
+        setTimeout(() => navigate('/transcriber/dashboard', { replace: true }), 3000);
         return;
       }
 
@@ -85,15 +86,23 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
 
       setClips(enrichedClips);
 
-      // Check for existing result (resume)
+      // Check for existing result (resume or guard)
       const existingResultRes = await client.models.TestResult.list();
-      const existingResult = (existingResultRes.data ?? []).find(
-        r => r.testId === testId && r.userId === userId && r.status !== 'COMPLETED'
+      const allMyResults = (existingResultRes.data ?? []).filter(
+        r => r.testId === testId && r.userId === userId
       );
 
+      // GUARD: already completed → redirect to result
+      const completedResult = allMyResults.find(r => r.status === 'COMPLETED');
+      if (completedResult) {
+        navigate(`/transcriber/result/${completedResult.id}`, { replace: true });
+        return;
+      }
+
+      // Resume in-progress or create new
+      const existingResult = allMyResults.find(r => r.status !== 'COMPLETED');
       if (existingResult) {
         setTestResultId(existingResult.id);
-        // Load existing transcriptions
         const transRes = await client.models.Transcription.list();
         const existing = (transRes.data ?? []).filter(t => t.testResultId === existingResult.id);
         const map: Record<string, string> = {};
@@ -102,7 +111,6 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
         }
         setTranscriptions(map);
       } else {
-        // Create new TestResult
         const newResult = await client.models.TestResult.create({
           testId,
           userId,
@@ -214,11 +222,22 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
     }
   }
 
+  if (phase === 'expired') {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <GlassCard className="p-8 text-center max-w-md">
+          <p className="text-warning text-lg font-semibold mb-2">This test has expired</p>
+          <p className="text-base-content/40 text-sm">Redirecting you to the dashboard…</p>
+        </GlassCard>
+      </div>
+    );
+  }
+
   if (phase === 'loading') {
     return (
       <div className="space-y-4">
-        <GlassCard className="h-24 skeleton" />
-        <GlassCard className="h-64 skeleton" />
+        <div className="card h-24 skeleton" />
+        <div className="card h-64 skeleton" />
       </div>
     );
   }
@@ -228,26 +247,26 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
     return (
       <div className="max-w-lg mx-auto space-y-6">
         <GlassCard className="p-8 text-center">
-          <div className={`text-6xl font-bold mb-4 ${finalResult.passed ? 'text-green-400' : 'text-red-400'}`}>
+          <div className={`text-6xl font-bold mb-4 ${finalResult.passed ? 'text-success' : 'text-error'}`}>
             {finalResult.passed ? '✓' : '✗'}
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-2xl font-bold text-base-content mb-2">
             {finalResult.passed ? 'Congratulations!' : 'Better luck next time'}
           </h2>
-          <p className="text-white/60 mb-6">
-            Your accuracy: <span className="text-white font-bold">{accuracy.toFixed(1)}%</span>
+          <p className="text-base-content/60 mb-6">
+            Your accuracy: <span className="text-base-content font-bold">{accuracy.toFixed(1)}%</span>
           </p>
           <StatusBadge status={finalResult.passed} className="text-base px-4 py-1" />
           <div className="mt-8 flex gap-3 justify-center">
             <button
               onClick={() => navigate('/transcriber/results')}
-              className="px-6 py-2 btn-gradient rounded-lg text-sm font-medium"
+              className="btn btn-primary btn-sm"
             >
               View My Results
             </button>
             <button
               onClick={() => navigate('/transcriber/dashboard')}
-              className="px-6 py-2 text-sm text-white/60 hover:text-white rounded-lg hover:bg-white/10 transition-all"
+              className="btn btn-ghost btn-sm"
             >
               Back to Dashboard
             </button>
@@ -262,7 +281,7 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
       <div className="flex items-center justify-center h-64">
         <div className="text-center space-y-4">
           <Loader2 size={40} className="animate-spin mx-auto" style={{ color: 'oklch(var(--p))' }} />
-          <p className="text-white/60">Scoring your transcriptions…</p>
+          <p className="text-base-content/60">Scoring your transcriptions…</p>
         </div>
       </div>
     );
@@ -280,11 +299,11 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
       <GlassCard className="p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-white">{test?.name}</h1>
-            <p className="text-white/40 text-sm mt-0.5">Min accuracy required: {Math.round((test?.minAccuracy ?? 0) * 100)}%</p>
+            <h1 className="text-xl font-bold text-base-content">{test?.name}</h1>
+            <p className="text-base-content/40 text-sm mt-0.5">Min accuracy required: {Math.round((test?.minAccuracy ?? 0) * 100)}%</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-white/60">Clip {clipIndex + 1} of {clips.length}</p>
+            <p className="text-sm text-base-content/60">Clip {clipIndex + 1} of {clips.length}</p>
             <div className="flex gap-1 mt-2">
               {clips.map((c, i) => (
                 <div
@@ -306,7 +325,7 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
 
       {/* Audio player */}
       <GlassCard className="p-5">
-        <p className="text-xs text-white/40 mb-3">
+        <p className="text-xs text-base-content/40 mb-3">
           Clip {clipIndex + 1}: {currentClip.filename}
         </p>
         {currentClip.audioUrl && (
@@ -319,18 +338,23 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
 
       {/* Transcription input */}
       <GlassCard className="p-5">
-        <label className="block text-sm font-medium text-white/60 mb-2">
+        <label className="block text-sm font-medium text-base-content/60 mb-2">
           Your Transcription
         </label>
         <textarea
           ref={textareaRef}
           rows={5}
-          className="glass-input w-full px-3 py-2 text-sm resize-none"
+          className="textarea textarea-bordered w-full resize-none"
           placeholder="Type what you hear in the audio clip…"
           value={currentText}
           onChange={e => handleTextChange(e.target.value)}
+          onPaste={e => e.preventDefault()}
+          onDrop={e => e.preventDefault()}
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
         />
-        <p className="text-xs text-white/30 mt-1">{currentText.split(/\s+/).filter(Boolean).length} words</p>
+        <p className="text-xs text-base-content/30 mt-1">{currentText.split(/\s+/).filter(Boolean).length} words</p>
       </GlassCard>
 
       {/* Navigation */}
@@ -338,7 +362,7 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
         <button
           onClick={handlePrev}
           disabled={clipIndex === 0}
-          className="flex items-center gap-2 px-4 py-2 text-sm text-white/60 hover:text-white rounded-lg hover:bg-white/10 transition-all disabled:opacity-30"
+          className="btn btn-ghost btn-sm gap-2 disabled:opacity-30"
         >
           <ArrowLeft size={16} /> Previous
         </button>
@@ -347,14 +371,14 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
           <button
             onClick={handleSubmit}
             disabled={!allFilled}
-            className="flex items-center gap-2 px-6 py-2.5 btn-gradient rounded-lg text-sm font-medium disabled:opacity-50"
+            className="btn btn-primary btn-sm gap-2 disabled:opacity-50"
           >
             <Send size={16} /> Submit Test
           </button>
         ) : (
           <button
             onClick={handleNext}
-            className="flex items-center gap-2 px-6 py-2.5 btn-gradient rounded-lg text-sm font-medium"
+            className="btn btn-primary btn-sm gap-2"
           >
             Next <ArrowRight size={16} />
           </button>
@@ -362,7 +386,7 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
       </div>
 
       {isLast && !allFilled && (
-        <p className="text-yellow-400/60 text-xs text-center">
+        <p className="text-warning/60 text-xs text-center">
           Please complete all clips before submitting.
         </p>
       )}

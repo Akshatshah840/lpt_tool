@@ -25,18 +25,18 @@ function ProjectForm({ initial, onSave, onCancel, saving }: ProjectFormProps) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm text-white/60 mb-1">Project Name *</label>
+        <label className="block text-sm text-base-content/60 mb-1">Project Name *</label>
         <input
-          className="glass-input w-full px-3 py-2 text-sm"
+          className="input input-bordered w-full"
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="e.g. Hindi Transcription Q1 2026"
         />
       </div>
       <div>
-        <label className="block text-sm text-white/60 mb-1">Description</label>
+        <label className="block text-sm text-base-content/60 mb-1">Description</label>
         <textarea
-          className="glass-input w-full px-3 py-2 text-sm resize-none"
+          className="textarea textarea-bordered w-full resize-none"
           rows={3}
           value={description}
           onChange={e => setDescription(e.target.value)}
@@ -44,16 +44,11 @@ function ProjectForm({ initial, onSave, onCancel, saving }: ProjectFormProps) {
         />
       </div>
       <div className="flex gap-3 justify-end">
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 text-sm text-white/60 hover:text-white rounded-lg hover:bg-white/10 transition-all"
-        >
-          Cancel
-        </button>
+        <button onClick={onCancel} className="btn btn-ghost btn-sm">Cancel</button>
         <button
           onClick={() => onSave(name, description)}
           disabled={!name.trim() || saving}
-          className="px-4 py-2 text-sm btn-gradient rounded-lg disabled:opacity-50"
+          className="btn btn-primary btn-sm disabled:opacity-50"
         >
           {saving ? 'Saving…' : 'Save Project'}
         </button>
@@ -111,12 +106,12 @@ export function AppAdminProjects() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Projects</h1>
-          <p className="text-white/40 text-sm mt-1">Manage all transcription projects</p>
+          <h1 className="text-2xl font-bold text-base-content">Projects</h1>
+          <p className="text-base-content/40 text-sm mt-1">Manage all transcription projects</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-4 py-2 btn-gradient rounded-lg text-sm font-medium"
+          className="btn btn-primary btn-sm gap-2"
         >
           <Plus size={16} /> New Project
         </button>
@@ -124,19 +119,19 @@ export function AppAdminProjects() {
 
       {showCreate && (
         <GlassCard className="p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Create Project</h2>
+          <h2 className="text-lg font-semibold text-base-content mb-4">Create Project</h2>
           <ProjectForm onSave={handleCreate} onCancel={() => setShowCreate(false)} saving={saving} />
         </GlassCard>
       )}
 
       {loading ? (
         <div className="space-y-3">
-          {[...Array(3)].map((_, i) => <GlassCard key={i} className="p-6 h-24 skeleton" />)}
+          {[...Array(3)].map((_, i) => <div key={i} className="card p-6 h-24 skeleton" />)}
         </div>
       ) : projects.length === 0 ? (
         <GlassCard className="p-12 text-center">
-          <FolderOpen size={40} className="text-white/20 mx-auto mb-3" />
-          <p className="text-white/40">No projects yet. Create your first project above.</p>
+          <FolderOpen size={40} className="text-base-content/20 mx-auto mb-3" />
+          <p className="text-base-content/40">No projects yet. Create your first project above.</p>
         </GlassCard>
       ) : (
         <div className="space-y-3">
@@ -144,7 +139,7 @@ export function AppAdminProjects() {
             <div key={project.id}>
               {editProject?.id === project.id ? (
                 <GlassCard className="p-6">
-                  <h2 className="text-lg font-semibold text-white mb-4">Edit Project</h2>
+                  <h2 className="text-lg font-semibold text-base-content mb-4">Edit Project</h2>
                   <ProjectForm
                     initial={editProject}
                     onSave={handleEdit}
@@ -155,22 +150,22 @@ export function AppAdminProjects() {
               ) : (
                 <GlassCard hover className="p-5 flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-white">{project.name}</h3>
+                    <h3 className="font-semibold text-base-content">{project.name}</h3>
                     {project.description && (
-                      <p className="text-white/50 text-sm mt-0.5">{project.description}</p>
+                      <p className="text-base-content/50 text-sm mt-0.5">{project.description}</p>
                     )}
-                    <p className="text-white/30 text-xs mt-1">Created {formatDate(project.createdAt)}</p>
+                    <p className="text-base-content/30 text-xs mt-1">Created {formatDate(project.createdAt)}</p>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setEditProject(project)}
-                      className="p-2 rounded-lg text-white/40 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all"
+                      className="btn btn-ghost btn-sm btn-square text-base-content/40 hover:text-primary hover:bg-primary/10"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(project.id)}
-                      className="p-2 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="btn btn-ghost btn-sm btn-square text-base-content/40 hover:text-error hover:bg-error/10"
                     >
                       <Trash2 size={16} />
                     </button>

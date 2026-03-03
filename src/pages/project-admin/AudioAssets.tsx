@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Upload, Trash2, FileAudio, Search, Loader2 } from 'lucide-react';
+import { Upload, Trash2, FileAudio, Search, Loader2, Play, Pause } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
+import { AudioPlayer } from '@/components/shared/AudioPlayer';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate, truncate } from '@/lib/utils';
 
@@ -84,13 +86,13 @@ function UploadForm({ projects, onUploaded }: UploadFormProps) {
 
   return (
     <GlassCard className="p-6 space-y-4">
-      <h2 className="text-lg font-semibold text-white">Upload Audio Asset</h2>
+      <h2 className="text-lg font-semibold text-base-content">Upload Audio Asset</h2>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm text-white/60 mb-1">Project *</label>
+          <label className="block text-sm text-base-content/60 mb-1">Project *</label>
           <select
-            className="glass-input w-full px-3 py-2 text-sm"
+            className="select select-bordered w-full"
             value={projectId}
             onChange={e => setProjectId(e.target.value)}
           >
@@ -99,9 +101,9 @@ function UploadForm({ projects, onUploaded }: UploadFormProps) {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-white/60 mb-1">Language *</label>
+          <label className="block text-sm text-base-content/60 mb-1">Language *</label>
           <select
-            className="glass-input w-full px-3 py-2 text-sm"
+            className="select select-bordered w-full"
             value={language}
             onChange={e => setLanguage(e.target.value)}
           >
@@ -111,22 +113,22 @@ function UploadForm({ projects, onUploaded }: UploadFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm text-white/60 mb-1">Audio File *</label>
+        <label className="block text-sm text-base-content/60 mb-1">Audio File *</label>
         <input
           type="file"
           accept="audio/*"
           onChange={e => setFile(e.target.files?.[0] ?? null)}
-          className="glass-input w-full px-3 py-2 text-sm file:bg-transparent file:border-0 file:cursor-pointer file-input-themed"
+          className="file-input file-input-bordered w-full"
         />
         {file && (
-          <p className="text-xs text-white/40 mt-1">{file.name} ({Math.round(file.size / 1024)} KB)</p>
+          <p className="text-xs text-base-content/40 mt-1">{file.name} ({Math.round(file.size / 1024)} KB)</p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm text-white/60 mb-1">Reference Transcription (Ground Truth) *</label>
+        <label className="block text-sm text-base-content/60 mb-1">Reference Transcription (Ground Truth) *</label>
         <textarea
-          className="glass-input w-full px-3 py-2 text-sm resize-none"
+          className="textarea textarea-bordered w-full resize-none"
           rows={3}
           value={reference}
           onChange={e => setReference(e.target.value)}
@@ -135,9 +137,9 @@ function UploadForm({ projects, onUploaded }: UploadFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm text-white/60 mb-1">Description</label>
+        <label className="block text-sm text-base-content/60 mb-1">Description</label>
         <input
-          className="glass-input w-full px-3 py-2 text-sm"
+          className="input input-bordered w-full"
           value={description}
           onChange={e => setDescription(e.target.value)}
           placeholder="Optional description"
@@ -146,22 +148,17 @@ function UploadForm({ projects, onUploaded }: UploadFormProps) {
 
       {uploading && (
         <div className="space-y-1">
-          <div className="flex justify-between text-xs text-white/40">
+          <div className="flex justify-between text-xs text-base-content/40">
             <span>Uploading…</span><span>{progress}%</span>
           </div>
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{ background: 'oklch(var(--p))', width: `${progress}%` }}
-            />
-          </div>
+          <progress className="progress progress-primary w-full" value={progress} max="100" />
         </div>
       )}
 
       <button
         onClick={handleUpload}
         disabled={!file || !reference.trim() || !projectId || uploading}
-        className="flex items-center gap-2 px-4 py-2 btn-gradient rounded-lg text-sm font-medium disabled:opacity-50"
+        className="btn btn-primary btn-sm gap-2 disabled:opacity-50"
       >
         {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
         {uploading ? 'Uploading…' : 'Upload Asset'}
@@ -177,6 +174,8 @@ export function ProjectAdminAudioAssets() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showUpload, setShowUpload] = useState(false);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [audioUrls, setAudioUrls] = useState<Record<string, string>>({});
 
   async function load() {
     const [assetsRes, projectsRes] = await Promise.all([
@@ -189,6 +188,16 @@ export function ProjectAdminAudioAssets() {
   }
 
   useEffect(() => { load(); }, []);
+
+  async function togglePlay(assetId: string, s3Key: string) {
+    if (playingId === assetId) { setPlayingId(null); return; }
+    if (!audioUrls[assetId]) {
+      const { getUrl } = await import('aws-amplify/storage');
+      const result = await getUrl({ path: s3Key, options: { expiresIn: 3600 } });
+      setAudioUrls(prev => ({ ...prev, [assetId]: result.url.toString() }));
+    }
+    setPlayingId(assetId);
+  }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this audio asset?')) return;
@@ -204,12 +213,12 @@ export function ProjectAdminAudioAssets() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Audio Assets</h1>
-          <p className="text-white/40 text-sm mt-1">Manage audio files and reference transcriptions</p>
+          <h1 className="text-2xl font-bold text-base-content">Audio Assets</h1>
+          <p className="text-base-content/40 text-sm mt-1">Manage audio files and reference transcriptions</p>
         </div>
         <button
           onClick={() => setShowUpload(v => !v)}
-          className="flex items-center gap-2 px-4 py-2 btn-gradient rounded-lg text-sm font-medium"
+          className="btn btn-primary btn-sm gap-2"
         >
           <Upload size={16} /> Upload Audio
         </button>
@@ -220,9 +229,9 @@ export function ProjectAdminAudioAssets() {
       )}
 
       <GlassCard className="p-4 flex items-center gap-3">
-        <Search size={16} className="text-white/40" />
+        <Search size={16} className="text-base-content/40" />
         <input
-          className="bg-transparent flex-1 text-sm text-white placeholder-white/30 outline-none"
+          className="bg-transparent flex-1 text-sm text-base-content placeholder-base-content/30 outline-none"
           placeholder="Search audio files…"
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -230,43 +239,65 @@ export function ProjectAdminAudioAssets() {
       </GlassCard>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(4)].map((_, i) => <GlassCard key={i} className="p-5 h-20 skeleton" />)}</div>
+        <div className="space-y-2">{[...Array(4)].map((_, i) => <div key={i} className="h-12 skeleton rounded-lg" />)}</div>
       ) : filtered.length === 0 ? (
-        <GlassCard className="p-12 text-center">
-          <FileAudio size={40} className="text-white/20 mx-auto mb-3" />
-          <p className="text-white/40">No audio assets yet. Upload your first file above.</p>
-        </GlassCard>
+        <EmptyState
+          icon={<FileAudio size={24} />}
+          heading="No audio assets yet"
+          description={search ? 'No files match your search.' : 'Upload your first audio file to get started.'}
+          action={!search ? { label: 'Upload Audio', onClick: () => setShowUpload(true) } : undefined}
+        />
       ) : (
         <GlassCard className="overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10">
-                {['Filename', 'Language', 'Project', 'Reference (truncated)', 'Size', 'Created', ''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filtered.map(a => (
-                <tr key={a.id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-4 py-3 text-sm text-white font-medium">{a.filename}</td>
-                  <td className="px-4 py-3 text-sm text-white/60">{a.languageCode}</td>
-                  <td className="px-4 py-3 text-sm text-white/60">{projects.find(p => p.id === a.projectId)?.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-xs text-white/50 max-w-xs">{truncate(a.referenceTranscription, 80)}</td>
-                  <td className="px-4 py-3 text-xs text-white/40">{a.fileSizeKb ? `${a.fileSizeKb} KB` : '—'}</td>
-                  <td className="px-4 py-3 text-xs text-white/40">{formatDate(a.createdAt)}</td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => handleDelete(a.id)}
-                      className="p-1.5 rounded text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="table table-zebra">
+              <thead>
+                <tr>
+                  {['Filename', 'Language', 'Project', 'Reference (truncated)', 'Size', 'Created', 'Preview', ''].map(h => (
+                    <th key={h}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map(a => (
+                  <>
+                    <tr key={a.id}>
+                      <td className="text-sm text-base-content font-medium">{a.filename}</td>
+                      <td className="text-sm text-base-content/60">{a.languageCode}</td>
+                      <td className="text-sm text-base-content/60">{projects.find(p => p.id === a.projectId)?.name ?? '—'}</td>
+                      <td className="text-xs text-base-content/50 max-w-xs">{truncate(a.referenceTranscription, 80)}</td>
+                      <td className="text-xs text-base-content/40">{a.fileSizeKb ? `${a.fileSizeKb} KB` : '—'}</td>
+                      <td className="text-xs text-base-content/40">{formatDate(a.createdAt)}</td>
+                      <td>
+                        <button
+                          onClick={() => togglePlay(a.id, a.s3Key)}
+                          className={`btn btn-ghost btn-xs btn-square ${playingId === a.id ? 'text-success' : 'text-base-content/30'}`}
+                          title={playingId === a.id ? 'Stop preview' : 'Preview audio'}
+                        >
+                          {playingId === a.id ? <Pause size={14} /> : <Play size={14} />}
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleDelete(a.id)}
+                          className="btn btn-ghost btn-xs btn-square text-base-content/30 hover:text-error hover:bg-error/10"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                    {playingId === a.id && audioUrls[a.id] && (
+                      <tr key={`${a.id}-player`}>
+                        <td colSpan={8} className="px-4 pb-4 bg-base-content/[0.02]">
+                          <AudioPlayer src={audioUrls[a.id]} onEnded={() => setPlayingId(null)} />
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </GlassCard>
       )}
     </div>

@@ -72,9 +72,9 @@ export function ProjectAdminResultDetail() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <GlassCard className="h-24 skeleton" />
-        <GlassCard className="h-48 skeleton" />
-        <GlassCard className="h-48 skeleton" />
+        <div className="card h-24 skeleton" />
+        <div className="card h-48 skeleton" />
+        <div className="card h-48 skeleton" />
       </div>
     );
   }
@@ -82,26 +82,21 @@ export function ProjectAdminResultDetail() {
   if (!result) {
     return (
       <GlassCard className="p-12 text-center">
-        <p className="text-white/40">Result not found.</p>
+        <p className="text-base-content/40">Result not found.</p>
       </GlassCard>
     );
   }
-
-  const accuracy = result.overallWer != null ? (1 - Math.min(result.overallWer, 1)) * 100 : null;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link
-          to="/project/projects"
-          className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
-        >
+        <Link to="/project/projects" className="btn btn-ghost btn-sm btn-square">
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Result Detail</h1>
-          <p className="text-white/40 text-sm mt-1">{result.testName} · {result.userName}</p>
+          <h1 className="text-2xl font-bold text-base-content">Result Detail</h1>
+          <p className="text-base-content/40 text-sm mt-1">{result.testName} · {result.userName}</p>
         </div>
       </div>
 
@@ -109,34 +104,34 @@ export function ProjectAdminResultDetail() {
       <GlassCard className="p-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div>
-            <p className="text-xs text-white/40 uppercase tracking-wider">Transcriber</p>
-            <p className="text-white font-medium mt-1">{result.userName ?? '—'}</p>
-            <p className="text-white/40 text-xs">{result.userEmail}</p>
+            <p className="text-xs text-base-content/40 uppercase tracking-wider">Transcriber</p>
+            <p className="text-base-content font-medium mt-1">{result.userName ?? '—'}</p>
+            <p className="text-base-content/40 text-xs">{result.userEmail}</p>
           </div>
           <div>
-            <p className="text-xs text-white/40 uppercase tracking-wider">Overall Accuracy</p>
-            <p className="text-2xl font-bold text-white mt-1">{werToAccuracy(result.overallWer)}</p>
-            <p className="text-white/40 text-xs">WER: {result.overallWer?.toFixed(4) ?? '—'}</p>
+            <p className="text-xs text-base-content/40 uppercase tracking-wider">Overall Accuracy</p>
+            <p className="text-2xl font-bold text-base-content mt-1">{werToAccuracy(result.overallWer)}</p>
+            <p className="text-base-content/40 text-xs">WER: {result.overallWer?.toFixed(4) ?? '—'}</p>
           </div>
           <div>
-            <p className="text-xs text-white/40 uppercase tracking-wider">Result</p>
+            <p className="text-xs text-base-content/40 uppercase tracking-wider">Result</p>
             <div className="mt-1">
               <StatusBadge status={result.passed} />
             </div>
           </div>
           <div>
-            <p className="text-xs text-white/40 uppercase tracking-wider">Completed</p>
-            <p className="text-white text-sm mt-1">{formatDate(result.completedAt)}</p>
+            <p className="text-xs text-base-content/40 uppercase tracking-wider">Completed</p>
+            <p className="text-base-content text-sm mt-1">{formatDate(result.completedAt)}</p>
           </div>
         </div>
       </GlassCard>
 
       {/* Per-clip diffs */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-white">Clip-by-Clip Comparison</h2>
+        <h2 className="text-lg font-semibold text-base-content">Clip-by-Clip Comparison</h2>
         {transcriptions.length === 0 ? (
           <GlassCard className="p-8 text-center">
-            <p className="text-white/30">No transcription data available.</p>
+            <p className="text-base-content/30">No transcription data available.</p>
           </GlassCard>
         ) : (
           transcriptions.map((t, i) => (

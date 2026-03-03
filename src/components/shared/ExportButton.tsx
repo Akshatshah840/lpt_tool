@@ -1,7 +1,6 @@
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, ChevronDown } from 'lucide-react';
 import { useExport } from '@/hooks/useExport';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
 
 interface ExportButtonProps {
   testId?: string;
@@ -9,56 +8,33 @@ interface ExportButtonProps {
   className?: string;
 }
 
-
-
 export function ExportButton({ testId, projectId, className }: ExportButtonProps) {
   const { triggerExport, isExporting } = useExport();
-  const [showMenu, setShowMenu] = useState(false);
 
   const handleExport = async (format: 'CSV' | 'XLSX') => {
-    setShowMenu(false);
+    // Close dropdown by blurring active element
+    (document.activeElement as HTMLElement)?.blur();
     await triggerExport({ testId, projectId, format });
   };
 
   return (
-    <div className="relative inline-block">
-      <button
-        onClick={() => setShowMenu(v => !v)}
-        disabled={isExporting}
-        className={cn(
-          'flex items-center gap-2 px-4 py-2 rounded-lg btn-gradient',
-          'text-sm disabled:opacity-50 disabled:cursor-not-allowed',
-          className
-        )}
+    <div className={cn('dropdown dropdown-end', className)}>
+      <div
+        tabIndex={0}
+        role="button"
+        className="btn btn-primary btn-sm gap-2"
+        aria-disabled={isExporting}
       >
         {isExporting
           ? <Loader2 size={16} className="animate-spin" />
           : <Download size={16} />}
         {isExporting ? 'Exporting…' : 'Export'}
-      </button>
-
-      {showMenu && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setShowMenu(false)}
-          />
-          <div className="absolute right-0 top-full mt-1 z-20 glass-card py-1 min-w-[120px]">
-            <button
-              className="w-full text-left px-4 py-2 text-sm text-white/80 hover:bg-white/10 transition-colors"
-              onClick={() => handleExport('CSV')}
-            >
-              Export CSV
-            </button>
-            <button
-              className="w-full text-left px-4 py-2 text-sm text-white/80 hover:bg-white/10 transition-colors"
-              onClick={() => handleExport('XLSX')}
-            >
-              Export Excel
-            </button>
-          </div>
-        </>
-      )}
+        <ChevronDown size={14} />
+      </div>
+      <ul tabIndex={0} className="dropdown-content menu bg-base-200 rounded-box shadow-xl z-50 p-2 w-40">
+        <li><button onClick={() => handleExport('CSV')}>CSV</button></li>
+        <li><button onClick={() => handleExport('XLSX')}>Excel (XLSX)</button></li>
+      </ul>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Users, Search, Download } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate } from '@/lib/utils';
 
@@ -144,13 +145,13 @@ export function ProjectAdminTranscribers() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Transcribers</h1>
-          <p className="text-white/40 text-sm mt-1">All users who have taken tests in your projects</p>
+          <h1 className="text-2xl font-bold text-base-content">Transcribers</h1>
+          <p className="text-base-content/40 text-sm mt-1">All users who have taken tests in your projects</p>
         </div>
         {selected.size > 0 && (
           <button
             onClick={() => exportCSV(selected, transcribers, allResults, allTests)}
-            className="flex items-center gap-2 px-4 py-2 btn-gradient rounded-lg text-sm font-medium"
+            className="btn btn-primary btn-sm gap-2"
           >
             <Download size={15} />
             Export Selected ({selected.size})
@@ -159,9 +160,9 @@ export function ProjectAdminTranscribers() {
       </div>
 
       <GlassCard className="p-4 flex items-center gap-3">
-        <Search size={16} className="text-white/40" />
+        <Search size={16} className="text-base-content/40" />
         <input
-          className="bg-transparent flex-1 text-sm text-white placeholder-white/30 outline-none"
+          className="bg-transparent flex-1 text-sm text-base-content placeholder-base-content/30 outline-none"
           placeholder="Search transcribers…"
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -169,62 +170,67 @@ export function ProjectAdminTranscribers() {
       </GlassCard>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(5)].map((_, i) => <GlassCard key={i} className="p-5 h-20 skeleton" />)}</div>
+        <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-12 skeleton rounded-lg" />)}</div>
       ) : filtered.length === 0 ? (
-        <GlassCard className="p-12 text-center">
-          <Users size={40} className="text-white/20 mx-auto mb-3" />
-          <p className="text-white/40">No users have taken any tests yet.</p>
-        </GlassCard>
+        <EmptyState
+          icon={<Users size={24} />}
+          heading={search ? 'No transcribers match your search' : 'No transcribers yet'}
+          description={search ? 'Try a different name or email.' : 'Transcribers will appear here once they start taking tests.'}
+        />
       ) : (
         <GlassCard className="overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="px-4 py-3 w-10">
-                  <input
-                    type="checkbox"
-                    checked={filtered.length > 0 && selected.size === filtered.length}
-                    onChange={toggleSelectAll}
-                    className="accent-indigo-500"
-                  />
-                </th>
-                {['Name', 'Email', 'Tests', 'Completed', 'Progress', 'Last Activity'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filtered.map(t => {
-                const pct = t.testCount > 0 ? Math.round((t.completedCount / t.testCount) * 100) : 0;
-                const isSelected = selected.has(t.userId);
-                return (
-                  <tr key={t.userId} className={`hover:bg-white/5 transition-colors ${isSelected ? 'bg-indigo-500/5' : ''}`}>
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleSelect(t.userId)}
-                        className="accent-indigo-500"
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-sm text-white font-medium">{t.userName ?? '—'}</td>
-                    <td className="px-4 py-3 text-sm text-white/60">{t.userEmail ?? '—'}</td>
-                    <td className="px-4 py-3 text-sm text-white/60">{t.testCount}</td>
-                    <td className="px-4 py-3 text-sm text-white/60">{t.completedCount}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                          <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
+          <div className="overflow-x-auto">
+            <table className="table table-zebra">
+              <thead>
+                <tr>
+                  <th className="w-10">
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && selected.size === filtered.length}
+                      onChange={toggleSelectAll}
+                      className="checkbox checkbox-primary checkbox-sm"
+                    />
+                  </th>
+                  {['Name', 'Email', 'Tests', 'Completed', 'Progress', 'Last Activity'].map(h => (
+                    <th key={h}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(t => {
+                  const pct = t.testCount > 0 ? Math.round((t.completedCount / t.testCount) * 100) : 0;
+                  const isSelected = selected.has(t.userId);
+                  return (
+                    <tr key={t.userId} className={isSelected ? 'bg-primary/[0.05]' : ''}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelect(t.userId)}
+                          className="checkbox checkbox-primary checkbox-sm"
+                        />
+                      </td>
+                      <td className="text-sm text-base-content font-medium">{t.userName ?? '—'}</td>
+                      <td className="text-sm text-base-content/60">{t.userEmail ?? '—'}</td>
+                      <td className="text-sm text-base-content/60">{t.testCount}</td>
+                      <td className="text-sm text-base-content/60">{t.completedCount}</td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <progress
+                            className="progress progress-primary flex-1 h-1.5"
+                            value={pct}
+                            max="100"
+                          />
+                          <span className="text-xs text-base-content/40 w-8">{pct}%</span>
                         </div>
-                        <span className="text-xs text-white/40 w-8">{pct}%</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-white/40">{formatDate(t.lastActivity)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="text-xs text-base-content/40">{formatDate(t.lastActivity)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </GlassCard>
       )}
     </div>

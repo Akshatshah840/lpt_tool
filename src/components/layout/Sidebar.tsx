@@ -55,55 +55,51 @@ export function Sidebar({ role, onSignOut }: SidebarProps) {
   const navItems = NAV_MAP[role] ?? [];
 
   return (
-    <aside className="glass-sidebar w-64 min-h-full flex flex-col">
+    <aside className="w-64 min-h-full flex flex-col bg-base-100 border-r border-base-content/[0.07]">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-white/[0.07]">
+      <div className="px-5 py-5 border-b border-base-content/[0.07]">
         <div className="flex items-center gap-3">
-          <div className={cn('w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg', ROLE_COLOR[role])}>
+          <div className={cn('w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0 shadow-lg', ROLE_COLOR[role])}>
             <Mic size={18} className="text-white" />
           </div>
           <div>
-            <p className="font-bold text-white text-sm leading-none">LPT Tool</p>
-            <p className="text-xs text-white/40 mt-0.5">{ROLE_LABEL[role]}</p>
+            <p className="font-bold text-base-content text-sm leading-none">LPT Tool</p>
+            <p className="text-xs text-base-content/40 mt-0.5">{ROLE_LABEL[role]}</p>
           </div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4">
-        <ul className="space-y-0.5">
-          {navItems.map(item => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
-                    isActive
-                      ? 'nav-item-active text-white shadow-sm'
-                      : 'text-white/50 hover:text-white/85 hover:bg-white/[0.06]'
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <span className={cn('transition-colors', isActive ? 'nav-item-active-icon' : 'text-white/35')}>
-                      {item.icon}
-                    </span>
-                    {item.label}
-                  </>
-                )}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <ul className="menu p-3 gap-0.5 text-sm font-medium flex-1">
+        {navItems.map(item => (
+          <li key={item.to}>
+            <NavLink
+              to={item.to}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 rounded-xl',
+                  isActive && 'nav-item-active text-base-content'
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <span className={cn('inline-flex items-center justify-center flex-shrink-0 transition-colors', isActive ? 'nav-item-active-icon' : 'text-base-content/35')}>
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                </>
+              )}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
 
       {/* Sign out */}
-      <div className="px-3 pb-4 pt-2 border-t border-white/[0.07]">
+      <div className="px-3 pb-4 pt-2 border-t border-base-content/[0.07]">
         <button
           onClick={onSignOut}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
+          className="btn btn-ghost btn-sm text-base-content/40 hover:text-error hover:bg-error/10 w-full justify-start gap-3"
         >
           <LogOut size={16} />
           Sign Out

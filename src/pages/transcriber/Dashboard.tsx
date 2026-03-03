@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClipboardList, ArrowRight, Clock, CheckCircle2, Loader2 } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
+import { StatCard } from '@/components/shared/StatCard';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate, werToAccuracy } from '@/lib/utils';
@@ -87,8 +89,8 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">My Tests</h1>
-        <p className="text-white/40 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-base-content">My Tests</h1>
+        <p className="text-base-content/40 text-sm mt-1">
           Open tests for <span className="font-medium" style={{ color: 'oklch(var(--p))' }}>{userLanguage?.toUpperCase()}</span>
           {' '}— all available tests are shown automatically
         </p>
@@ -96,16 +98,9 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Available',  value: tests.length,     colorVar: '--p' },
-          { label: 'Pending',    value: pending.length,   colorVar: '--wa' },
-          { label: 'Completed',  value: completed.length, colorVar: '--su' },
-        ].map(s => (
-          <GlassCard key={s.label} glow className="p-5 text-center">
-            <p className="text-3xl font-bold" style={{ color: `oklch(var(${s.colorVar}))` }}>{loading ? '—' : s.value}</p>
-            <p className="text-white/40 text-sm mt-1">{s.label}</p>
-          </GlassCard>
-        ))}
+        <StatCard icon={<ClipboardList size={20} />} label="Available" value={tests.length} colorVar="--p" loading={loading} />
+        <StatCard icon={<Clock size={20} />} label="Pending" value={pending.length} colorVar="--wa" loading={loading} />
+        <StatCard icon={<CheckCircle2 size={20} />} label="Completed" value={completed.length} colorVar="--su" loading={loading} />
       </div>
 
       {loading ? (
@@ -113,36 +108,34 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
           <Loader2 size={28} className="animate-spin" style={{ color: 'oklch(var(--p))' }} />
         </div>
       ) : tests.length === 0 ? (
-        <GlassCard className="p-12 text-center">
-          <ClipboardList size={40} className="text-white/20 mx-auto mb-3" />
-          <p className="text-white/40 font-medium">No open tests available</p>
-          <p className="text-white/25 text-sm mt-1">
-            Tests for <strong>{userLanguage?.toUpperCase()}</strong> will appear here when a Project Admin publishes them.
-          </p>
-        </GlassCard>
+        <EmptyState
+          icon={<ClipboardList size={24} />}
+          heading="No open tests available"
+          description={`Tests for ${userLanguage?.toUpperCase()} will appear here when a Project Admin publishes them.`}
+        />
       ) : (
         <div className="space-y-4">
           {/* Pending tests */}
           {pending.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-base-content/50 uppercase tracking-wider">
                 Pending ({pending.length})
               </h2>
               {pending.map(t => (
                 <GlassCard key={t.testId} hover className="p-5 flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-white">{t.testName}</h3>
+                      <h3 className="font-semibold text-base-content">{t.testName}</h3>
                       {t.resultStatus === 'IN_PROGRESS' && (
                         <StatusBadge status="IN_PROGRESS" />
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                      <span className="text-white/40 text-sm">{t.languageCode.toUpperCase()}</span>
-                      <span className="text-white/20">·</span>
-                      <span className="text-white/40 text-sm">{t.clipCount} clip{t.clipCount !== 1 ? 's' : ''}</span>
-                      <span className="text-white/20">·</span>
-                      <span className="text-white/40 text-sm">Min {Math.round(t.minAccuracy * 100)}% accuracy</span>
+                      <span className="text-base-content/40 text-sm">{t.languageCode.toUpperCase()}</span>
+                      <span className="text-base-content/20">·</span>
+                      <span className="text-base-content/40 text-sm">{t.clipCount} clip{t.clipCount !== 1 ? 's' : ''}</span>
+                      <span className="text-base-content/20">·</span>
+                      <span className="text-base-content/40 text-sm">Min {Math.round(t.minAccuracy * 100)}% accuracy</span>
                     </div>
                     {t.expiresAt && (
                       <div className="flex items-center gap-1 mt-1.5 text-xs" style={{ color: 'oklch(var(--wa) / 0.75)' }}>
@@ -153,7 +146,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
                   </div>
                   <Link
                     to={`/transcriber/test/${t.testId}`}
-                    className="flex items-center gap-2 px-4 py-2 btn-gradient rounded-xl text-sm font-medium flex-shrink-0"
+                    className="btn btn-primary btn-sm gap-2 flex-shrink-0"
                   >
                     {t.resultStatus === 'IN_PROGRESS' ? 'Continue' : 'Start'} <ArrowRight size={14} />
                   </Link>
@@ -165,7 +158,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
           {/* Completed tests */}
           {completed.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-base-content/50 uppercase tracking-wider">
                 Completed ({completed.length})
               </h2>
               {completed.map(t => (
@@ -173,18 +166,18 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <CheckCircle2 size={16} className="flex-shrink-0" style={{ color: 'oklch(var(--su))' }} />
-                      <h3 className="font-semibold text-white">{t.testName}</h3>
+                      <h3 className="font-semibold text-base-content">{t.testName}</h3>
                       <StatusBadge status={t.passed} />
                     </div>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-white/40 text-sm">Accuracy: {werToAccuracy(t.overallWer)}</span>
-                      <span className="text-white/20">·</span>
-                      <span className="text-white/40 text-sm">{formatDate(t.completedAt)}</span>
+                      <span className="text-base-content/40 text-sm">Accuracy: {werToAccuracy(t.overallWer)}</span>
+                      <span className="text-base-content/20">·</span>
+                      <span className="text-base-content/40 text-sm">{formatDate(t.completedAt)}</span>
                     </div>
                   </div>
                   <Link
-                    to="/transcriber/results"
-                    className="px-4 py-2 text-xs font-medium rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all flex-shrink-0"
+                    to={t.resultId ? `/transcriber/result/${t.resultId}` : '/transcriber/results'}
+                    className="btn btn-ghost btn-sm border border-base-content/10 text-base-content/60 flex-shrink-0"
                   >
                     View Results
                   </Link>
