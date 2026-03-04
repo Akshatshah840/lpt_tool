@@ -54,7 +54,7 @@ export function AuthPage() {
             hideSignUp={false}
           />
         </div>
-        <p className="text-center text-base-content/30 text-xs mt-4">
+        <p className="text-center text-base-content/40 text-xs mt-4">
           New users are automatically registered as Transcribers.
         </p>
       </div>

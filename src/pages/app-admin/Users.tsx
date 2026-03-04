@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Users as UsersIcon, ShieldCheck, ShieldOff, Search, AlertCircle } from 'lucide-react';
+import { Users as UsersIcon, ShieldCheck, ShieldOff, Search, AlertCircle, Loader2 } from 'lucide-react';
+
+const GROUP_LABELS: Record<string, string> = {
+  APP_ADMINS: 'App Admin',
+  PROJECT_ADMINS: 'Project Admin',
+  TRANSCRIBERS: 'Transcriber',
+};
 import { GlassCard } from '@/components/shared/GlassCard';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { getInitials } from '@/lib/utils';
@@ -118,7 +124,7 @@ export function AppAdminUsers({ canManageRoles = true }: Props) {
                   <div className="flex gap-1">
                     {user.groups.map(g => (
                       <span key={g} className="badge badge-primary badge-sm">
-                        {g}
+                        {GROUP_LABELS[g] ?? g}
                       </span>
                     ))}
                   </div>
@@ -129,7 +135,7 @@ export function AppAdminUsers({ canManageRoles = true }: Props) {
                       className="btn btn-primary btn-xs gap-1.5 disabled:opacity-50"
                     >
                       {isProjAdmin ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
-                      {promoting === user.id ? '…' : isProjAdmin ? 'Demote' : 'Promote'}
+                      {promoting === user.id ? <Loader2 size={13} className="animate-spin" /> : isProjAdmin ? 'Demote' : 'Promote'}
                     </button>
                   )}
                 </div>

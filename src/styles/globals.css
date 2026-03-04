@@ -36,8 +36,8 @@ body {
 .card:where(.hover\:shadow-xl):hover,
 .card.card-hover:hover {
   border-color: oklch(var(--p) / 0.28);
-  box-shadow: 0 8px 32px oklch(0 0 0 / 0.3), 0 0 0 1px oklch(var(--p) / 0.1), inset 0 1px 0 oklch(var(--bc) / 0.08);
-  transform: translateY(-1px);
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.35), 0 0 0 1px oklch(var(--p) / 0.1), inset 0 1px 0 oklch(var(--bc) / 0.08);
+  transform: translateY(-2px);
 }
 
 /* Light themes: use b1 (white) for cards so they pop above b1/b2 page */
@@ -51,7 +51,7 @@ body {
 [data-theme="lpt-light"] .card.card-hover:hover {
   border-color: oklch(var(--p) / 0.3);
   box-shadow: 0 4px 20px oklch(var(--p) / 0.08);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 /* btn-primary — gradient */

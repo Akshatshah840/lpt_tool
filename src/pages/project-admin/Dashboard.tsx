@@ -99,7 +99,10 @@ export function ProjectAdminDashboard() {
         {loading ? (
           <div className="space-y-2">{[...Array(2)].map((_, i) => <div key={i} className="h-[60px] skeleton rounded-lg" />)}</div>
         ) : projects.length === 0 ? (
-          <p className="text-base-content/30 text-sm py-6 text-center">No projects yet. Create one in Projects.</p>
+          <div className="py-6 text-center">
+            <p className="text-base-content/40 text-sm">No projects yet.</p>
+            <Link to="/project/projects" className="btn btn-primary btn-sm mt-3">Create Project</Link>
+          </div>
         ) : (
           <div className="space-y-3">
             {projects.map(p => {
@@ -163,7 +166,7 @@ export function ProjectAdminDashboard() {
         ) : (
           <div className="space-y-2">
             {recentResults.map(r => (
-              <div key={r.id} className="flex items-center justify-between py-2 border-b border-base-content/[0.05] last:border-0">
+              <div key={r.id} className="flex items-center justify-between py-2 px-2 -mx-2 rounded-md border-b border-base-content/[0.05] last:border-0 hover:bg-base-content/[0.03] transition-colors">
                 <div>
                   <span className="text-sm text-base-content">{r.userName ?? 'Unknown'}</span>
                   <span className="text-base-content/30 text-xs ml-2">— {r.testName}</span>

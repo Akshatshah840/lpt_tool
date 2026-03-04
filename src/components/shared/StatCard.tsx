@@ -11,7 +11,7 @@ interface StatCardProps {
 
 export function StatCard({ icon, label, value, sub, colorVar = '--p', loading }: StatCardProps) {
   if (loading) {
-    return <div className="card p-6 h-[100px] skeleton" />;
+    return <div className="card p-5 h-[88px] skeleton" />;
   }
   return (
     <div className={cn('card p-5 ring-1 ring-primary/10')}>

@@ -9,23 +9,23 @@ import { cn } from '@/lib/utils';
 interface NavItem { to: string; label: string; icon: React.ReactNode }
 
 const APP_ADMIN_NAV: NavItem[] = [
-  { to: '/admin/dashboard', label: 'Dashboard',   icon: <LayoutDashboard size={17} /> },
-  { to: '/admin/projects',  label: 'Projects',    icon: <FolderOpen size={17} /> },
-  { to: '/admin/users',     label: 'Users',       icon: <Users size={17} /> },
-  { to: '/admin/results',   label: 'All Results', icon: <BarChart2 size={17} /> },
+  { to: '/admin/dashboard', label: 'Dashboard',   icon: <LayoutDashboard size={18} /> },
+  { to: '/admin/projects',  label: 'Projects',    icon: <FolderOpen size={18} /> },
+  { to: '/admin/users',     label: 'Users',       icon: <Users size={18} /> },
+  { to: '/admin/results',   label: 'All Results', icon: <BarChart2 size={18} /> },
 ];
 
 const PROJECT_ADMIN_NAV: NavItem[] = [
-  { to: '/project/dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={17} /> },
-  { to: '/project/projects',     label: 'Projects',     icon: <FolderOpen size={17} /> },
-  { to: '/project/tests',        label: 'Tests',        icon: <ClipboardList size={17} /> },
-  { to: '/project/audio-assets', label: 'Audio Assets', icon: <FileAudio size={17} /> },
-  { to: '/project/users',        label: 'Users',        icon: <Users size={17} /> },
+  { to: '/project/dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={18} /> },
+  { to: '/project/projects',     label: 'Projects',     icon: <FolderOpen size={18} /> },
+  { to: '/project/tests',        label: 'Tests',        icon: <ClipboardList size={18} /> },
+  { to: '/project/audio-assets', label: 'Audio Assets', icon: <FileAudio size={18} /> },
+  { to: '/project/users',        label: 'Users',        icon: <Users size={18} /> },
 ];
 
 const TRANSCRIBER_NAV: NavItem[] = [
-  { to: '/transcriber/dashboard', label: 'My Tests',   icon: <LayoutDashboard size={17} /> },
-  { to: '/transcriber/results',   label: 'My Results', icon: <CheckSquare size={17} /> },
+  { to: '/transcriber/dashboard', label: 'My Tests',   icon: <LayoutDashboard size={18} /> },
+  { to: '/transcriber/results',   label: 'My Results', icon: <CheckSquare size={18} /> },
 ];
 
 const NAV_MAP: Record<NonNullable<UserRole>, NavItem[]> = {
@@ -57,7 +57,7 @@ export function Sidebar({ role, onSignOut }: SidebarProps) {
   return (
     <aside className="w-64 min-h-full flex flex-col bg-base-100 border-r border-base-content/[0.07]">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-base-content/[0.07]">
+      <div className="px-5 py-3.5 border-b border-base-content/[0.07]">
         <div className="flex items-center gap-3">
           <div className={cn('w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0 shadow-lg', ROLE_COLOR[role])}>
             <Mic size={18} className="text-white" />
@@ -99,9 +99,9 @@ export function Sidebar({ role, onSignOut }: SidebarProps) {
       <div className="px-3 pb-4 pt-2 border-t border-base-content/[0.07]">
         <button
           onClick={onSignOut}
-          className="btn btn-ghost btn-sm text-base-content/40 hover:text-error hover:bg-error/10 w-full justify-start gap-3"
+          className="btn btn-ghost btn-sm text-base-content/50 hover:text-error hover:bg-error/10 w-full justify-start gap-3"
         >
-          <LogOut size={16} />
+          <LogOut size={17} />
           Sign Out
         </button>
       </div>

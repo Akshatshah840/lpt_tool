@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English', hi: 'Hindi', es: 'Spanish', fr: 'French',
+  de: 'German', ar: 'Arabic', zh: 'Chinese', pt: 'Portuguese',
+  ru: 'Russian', ja: 'Japanese',
+};
 import { ClipboardList, ArrowRight, Clock, CheckCircle2, Loader2 } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { StatCard } from '@/components/shared/StatCard';
@@ -91,7 +97,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
       <div>
         <h1 className="text-2xl font-bold text-base-content">My Tests</h1>
         <p className="text-base-content/40 text-sm mt-1">
-          Open tests for <span className="font-medium" style={{ color: 'oklch(var(--p))' }}>{userLanguage?.toUpperCase()}</span>
+          Open tests for <span className="font-medium" style={{ color: 'oklch(var(--p))' }}>{userLanguage ? (LANGUAGE_NAMES[userLanguage] ?? userLanguage) : ''}</span>
           {' '}— all available tests are shown automatically
         </p>
       </div>
@@ -111,7 +117,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
         <EmptyState
           icon={<ClipboardList size={24} />}
           heading="No open tests available"
-          description={`Tests for ${userLanguage?.toUpperCase()} will appear here when a Project Admin publishes them.`}
+          description={`Tests for ${userLanguage ? (LANGUAGE_NAMES[userLanguage] ?? userLanguage) : ''} will appear here when a Project Admin publishes them.`}
         />
       ) : (
         <div className="space-y-4">
@@ -119,7 +125,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
           {pending.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-base-content/50 uppercase tracking-wider">
-                Pending ({pending.length})
+                Pending Tests ({pending.length})
               </h2>
               {pending.map(t => (
                 <GlassCard key={t.testId} hover className="p-5 flex items-start justify-between gap-4">
@@ -131,11 +137,11 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                      <span className="text-base-content/40 text-sm">{t.languageCode.toUpperCase()}</span>
+                      <span className="text-base-content/40 text-sm">{LANGUAGE_NAMES[t.languageCode] ?? t.languageCode}</span>
                       <span className="text-base-content/20">·</span>
                       <span className="text-base-content/40 text-sm">{t.clipCount} clip{t.clipCount !== 1 ? 's' : ''}</span>
                       <span className="text-base-content/20">·</span>
-                      <span className="text-base-content/40 text-sm">Min {Math.round(t.minAccuracy * 100)}% accuracy</span>
+                      <span className="text-sm" style={{ color: 'oklch(var(--p) / 0.7)' }}>Min {Math.round(t.minAccuracy * 100)}% accuracy</span>
                     </div>
                     {t.expiresAt && (
                       <div className="flex items-center gap-1 mt-1.5 text-xs" style={{ color: 'oklch(var(--wa) / 0.75)' }}>
@@ -159,7 +165,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
           {completed.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-base-content/50 uppercase tracking-wider">
-                Completed ({completed.length})
+                Completed Tests ({completed.length})
               </h2>
               {completed.map(t => (
                 <GlassCard key={t.testId} className="p-5 flex items-start justify-between gap-4 opacity-75">
