@@ -6,13 +6,22 @@ import {
 } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { AudioPlayer } from '@/components/shared/AudioPlayer';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate, werToAccuracy } from '@/lib/utils';
 import { LANGUAGES } from '@/lib/languages';
 
+async function resolveAudioUrl(s3Key: string): Promise<string> {
+  const { getUrl } = await import('aws-amplify/storage');
+  const result = await getUrl({ path: s3Key, options: { expiresIn: 3600 } });
+  return result.url.toString();
+}
+
 interface ClipRow {
   id: string;
   filename: string;
+  s3Key: string;
+  audioUrl?: string;
   referenceTranscription?: string | null;
   fileSizeKb?: number | null;
 }
@@ -95,15 +104,25 @@ export function ProjectAdminProjectUsers() {
         const projectClips = (assetsRes.data ?? []).filter(
           (a: { id: string; projectId: string }) => a.projectId === projectId || taaIds.has(a.id)
         );
-        setClips(projectClips.map((a: {
-          id: string; filename: string;
-          referenceTranscription?: string | null; fileSizeKb?: number | null;
-        }) => ({
-          id: a.id,
-          filename: a.filename,
-          referenceTranscription: a.referenceTranscription,
-          fileSizeKb: a.fileSizeKb,
-        })));
+        // Resolve presigned URLs for all clips in parallel
+        const clipRows: ClipRow[] = await Promise.all(
+          projectClips.map(async (a: {
+            id: string; filename: string; s3Key: string;
+            referenceTranscription?: string | null; fileSizeKb?: number | null;
+          }) => {
+            let audioUrl: string | undefined;
+            try { audioUrl = await resolveAudioUrl(a.s3Key); } catch { /* skip */ }
+            return {
+              id: a.id,
+              filename: a.filename,
+              s3Key: a.s3Key,
+              audioUrl,
+              referenceTranscription: a.referenceTranscription,
+              fileSizeKb: a.fileSizeKb,
+            };
+          })
+        );
+        setClips(clipRows);
 
         const testResults = (resultsRes.data ?? []).filter(
           (r: { testId: string }) => r.testId === foundTest.id
@@ -171,6 +190,7 @@ export function ProjectAdminProjectUsers() {
       setClipRef('');
       setShowAddClip(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+      // Re-load to pick up the new clip with its presigned URL
       await load();
     } catch (e) {
       alert('Upload failed: ' + (e instanceof Error ? e.message : 'Unknown error'));
@@ -322,28 +342,35 @@ export function ProjectAdminProjectUsers() {
             <p className="text-base-content/40 text-sm">No audio clips yet</p>
           </GlassCard>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {clips.map((clip, i) => (
-              <GlassCard key={clip.id} className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0 mt-0.5">
+              <GlassCard key={clip.id} className="p-4 space-y-3">
+                {/* Clip header */}
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
                     <FileAudio size={16} className="text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-base-content truncate">{clip.filename}</span>
+                      <span className="text-xs text-base-content/30 flex-shrink-0">#{i + 1}</span>
                       {clip.fileSizeKb && (
                         <span className="text-xs text-base-content/30 flex-shrink-0">{clip.fileSizeKb} KB</span>
                       )}
-                      <span className="text-xs text-base-content/20 flex-shrink-0">#{i + 1}</span>
                     </div>
                     {clip.referenceTranscription && (
-                      <p className="text-xs text-base-content/50 mt-1 italic line-clamp-2">
-                        "{clip.referenceTranscription}"
+                      <p className="text-xs text-base-content/50 mt-0.5 italic">
+                        Ground truth: "{clip.referenceTranscription}"
                       </p>
                     )}
                   </div>
                 </div>
+
+                {/* Audio player */}
+                {clip.audioUrl
+                  ? <AudioPlayer src={clip.audioUrl} className="pt-1 border-t border-base-content/[0.06]" />
+                  : <p className="text-xs text-base-content/30 italic">Audio URL unavailable</p>
+                }
               </GlassCard>
             ))}
           </div>
