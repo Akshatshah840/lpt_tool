@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardList, CheckCircle, Clock, TrendingUp, FolderOpen, FolderX } from 'lucide-react';
+import { ClipboardList, CheckCircle, Clock, TrendingUp, FolderOpen, FolderX, ArrowRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { StatCard } from '@/components/shared/StatCard';
@@ -23,7 +23,6 @@ export function ProjectAdminDashboard() {
   }>>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [chartData, setChartData] = useState<{ name: string; pass: number; fail: number }[]>([]);
-  const [toggling, setToggling] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -67,21 +66,6 @@ export function ProjectAdminDashboard() {
     }
     load();
   }, []);
-
-  async function toggleProject(project: Project) {
-    setToggling(project.id);
-    try {
-      const newStatus = project.status === 'OPEN' ? 'CLOSED' : 'OPEN';
-      await client.models.Project.update({ id: project.id, status: newStatus });
-      const testsRes = await client.models.Test.list({ filter: { projectId: { eq: project.id } } });
-      for (const test of testsRes.data ?? []) {
-        await client.models.Test.update({ id: test.id, status: newStatus });
-      }
-      setProjects(prev => prev.map(p => p.id === project.id ? { ...p, status: newStatus } : p));
-    } finally {
-      setToggling(null);
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -127,13 +111,12 @@ export function ProjectAdminDashboard() {
                   </div>
                   <div className="flex items-center gap-3">
                     <StatusBadge status={p.status as 'OPEN' | 'CLOSED'} />
-                    <button
-                      onClick={() => toggleProject(p)}
-                      disabled={toggling === p.id}
-                      className="btn btn-ghost btn-xs border border-base-content/10 disabled:opacity-50"
+                    <Link
+                      to={`/project/projects/${p.id}`}
+                      className="btn btn-ghost btn-xs gap-1 text-base-content/50 hover:text-base-content"
                     >
-                      {toggling === p.id ? '…' : isOpen ? 'Close' : 'Open'}
-                    </button>
+                      Manage <ArrowRight size={11} />
+                    </Link>
                   </div>
                 </div>
               );

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  Plus, FolderOpen, FolderX, Upload, Trash2, ArrowRight,
+  Plus, FolderOpen, FolderX, Upload, Trash2,
   Loader2, Globe, ChevronRight, X, CheckCircle2, FileAudio,
 } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
@@ -328,6 +328,7 @@ function CreateProjectModal({ onClose, onCreated }: CreateModalProps) {
 
 export function ProjectAdminProjectsManager() {
   const client = useAmplifyData();
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -379,6 +380,23 @@ export function ProjectAdminProjectsManager() {
 
   async function deleteProject(p: ProjectRow) {
     if (!confirm(`Delete "${p.name}"? This cannot be undone.`)) return;
+    // Cascade: delete Test children first
+    const testsRes = await client.models.Test.list({ filter: { projectId: { eq: p.id } } });
+    for (const test of testsRes.data ?? []) {
+      const [taaRes, trRes] = await Promise.all([
+        client.models.TestAudioAsset.list({ filter: { testId: { eq: test.id } } }),
+        client.models.TestResult.list({ filter: { testId: { eq: test.id } } }),
+      ]);
+      await Promise.all([
+        ...(taaRes.data ?? []).map((taa: { id: string }) => client.models.TestAudioAsset.delete({ id: taa.id })),
+        ...(trRes.data ?? []).map((tr: { id: string }) => client.models.TestResult.delete({ id: tr.id })),
+      ]);
+      await client.models.Test.delete({ id: test.id });
+    }
+    // Delete AudioAssets for this project
+    const assetsRes = await client.models.AudioAsset.list({ filter: { projectId: { eq: p.id } } });
+    await Promise.all((assetsRes.data ?? []).map((a: { id: string }) => client.models.AudioAsset.delete({ id: a.id })));
+    // Delete Project
     await client.models.Project.delete({ id: p.id });
     setProjects(prev => prev.filter(r => r.id !== p.id));
   }
@@ -413,7 +431,10 @@ export function ProjectAdminProjectsManager() {
             return (
               <GlassCard key={p.id} className="p-5">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div
+                    className="flex items-start gap-4 flex-1 min-w-0 cursor-pointer"
+                    onClick={() => navigate(`/project/projects/${p.id}`)}
+                  >
                     <div className={`p-2.5 rounded-xl flex-shrink-0 ${isOpen ? 'bg-primary/15' : 'bg-base-content/[0.05]'}`}>
                       {isOpen
                         ? <FolderOpen size={20} className="text-primary" />
@@ -442,20 +463,14 @@ export function ProjectAdminProjectsManager() {
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
-                      onClick={() => toggleStatus(p)}
+                      onClick={e => { e.stopPropagation(); toggleStatus(p); }}
                       disabled={toggling === p.id}
                       className="btn btn-ghost btn-xs border border-base-content/10 disabled:opacity-40"
                     >
                       {toggling === p.id ? '…' : isOpen ? 'Close' : 'Open'}
                     </button>
-                    <Link
-                      to={`/project/projects/${p.id}`}
-                      className="btn btn-primary btn-xs gap-1.5"
-                    >
-                      View Users <ArrowRight size={11} />
-                    </Link>
                     <button
-                      onClick={() => deleteProject(p)}
+                      onClick={e => { e.stopPropagation(); deleteProject(p); }}
                       className="btn btn-ghost btn-square btn-xs text-base-content/20 hover:text-error hover:bg-error/10"
                       title="Delete project"
                     >
