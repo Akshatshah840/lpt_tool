@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Users as UsersIcon, ShieldCheck, ShieldOff, Search, AlertCircle, Loader2 } from 'lucide-react';
-
-const GROUP_LABELS: Record<string, string> = {
-  APP_ADMINS: 'App Admin',
-  PROJECT_ADMINS: 'Project Admin',
-  TRANSCRIBERS: 'Transcriber',
-};
+import { Users as UsersIcon, ShieldCheck, ShieldOff, Search, AlertCircle, Loader2, Lock } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { getInitials } from '@/lib/utils';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
+
+const GROUP_LABELS: Record<string, { label: string; color: string }> = {
+  APP_ADMINS:     { label: 'App Admin',     color: 'badge-error' },
+  PROJECT_ADMINS: { label: 'Project Admin', color: 'badge-primary' },
+  TRANSCRIBERS:   { label: 'Transcriber',   color: 'badge-success' },
+};
 
 interface UserRow {
   id: string;
@@ -72,12 +72,23 @@ export function AppAdminUsers({ canManageRoles = true }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-base-content">Users</h1>
-          <p className="text-base-content/40 text-sm mt-1">Manage user roles and permissions</p>
+          <p className="text-base-content/40 text-sm mt-1">
+            {canManageRoles ? 'Manage user roles and permissions' : 'View all registered users'}
+          </p>
         </div>
+        {!canManageRoles && (
+          <div className="flex items-center gap-1.5 text-xs text-base-content/40 border border-base-content/10 rounded-lg px-3 py-1.5">
+            <Lock size={12} />
+            Read only
+          </div>
+        )}
+        {!loading && users.length > 0 && (
+          <span className="badge badge-ghost">{users.length} users</span>
+        )}
       </div>
 
       <GlassCard className="p-4 flex items-center gap-3">
-        <Search size={16} className="text-base-content/40" />
+        <Search size={16} className="text-base-content/40 flex-shrink-0" />
         <input
           className="bg-transparent flex-1 text-sm text-base-content placeholder-base-content/30 outline-none"
           placeholder="Search users by name or email…"
@@ -103,46 +114,55 @@ export function AppAdminUsers({ canManageRoles = true }: Props) {
           description={search ? 'Try a different name or email.' : 'Users will appear here once they sign up.'}
         />
       ) : (
-        <div className="space-y-3">
-          {filtered.map(user => {
-            const isProjAdmin = user.groups.includes('PROJECT_ADMINS');
-            const isAppAdmin = user.groups.includes('APP_ADMINS');
-            return (
-              <GlassCard key={user.id} className="p-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="avatar placeholder">
-                    <div className="w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold">
-                      <span>{getInitials(user.name || user.email)}</span>
+        <GlassCard className="overflow-hidden">
+          <div className="divide-y divide-base-content/[0.06]">
+            {filtered.map(user => {
+              const isProjAdmin = user.groups.includes('PROJECT_ADMINS');
+              const isAppAdmin  = user.groups.includes('APP_ADMINS');
+              const groupInfo   = user.groups[0] ? (GROUP_LABELS[user.groups[0]] ?? { label: user.groups[0], color: 'badge-ghost' }) : null;
+              return (
+                <div key={user.id} className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-base-content/[0.02] transition-colors">
+                  {/* Left: avatar + name/email */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="avatar placeholder flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                        <span>{getInitials(user.name || user.email)}</span>
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-base-content truncate">{user.name || user.email}</p>
+                        {groupInfo && (
+                          <span className={`badge badge-sm ${groupInfo.color}`}>{groupInfo.label}</span>
+                        )}
+                      </div>
+                      {user.name && (
+                        <p className="text-base-content/40 text-sm truncate">{user.email}</p>
+                      )}
                     </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-base-content">{user.name || user.email}</p>
-                    <p className="text-base-content/50 text-sm">{user.email}</p>
+
+                  {/* Right: actions */}
+                  <div className="flex-shrink-0">
+                    {canManageRoles && !isAppAdmin ? (
+                      <button
+                        onClick={() => promoteUser(user.id, isProjAdmin ? 'TRANSCRIBERS' : 'PROJECT_ADMINS')}
+                        disabled={promoting === user.id}
+                        className={`btn btn-xs gap-1.5 disabled:opacity-50 ${isProjAdmin ? 'btn-ghost border border-base-content/10 hover:btn-error' : 'btn-primary'}`}
+                      >
+                        {promoting === user.id
+                          ? <Loader2 size={13} className="animate-spin" />
+                          : isProjAdmin ? <ShieldOff size={13} /> : <ShieldCheck size={13} />
+                        }
+                        {promoting === user.id ? '…' : isProjAdmin ? 'Demote' : 'Promote'}
+                      </button>
+                    ) : null}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-1">
-                    {user.groups.map(g => (
-                      <span key={g} className="badge badge-primary badge-sm">
-                        {GROUP_LABELS[g] ?? g}
-                      </span>
-                    ))}
-                  </div>
-                  {canManageRoles && !isAppAdmin && (
-                    <button
-                      onClick={() => promoteUser(user.id, isProjAdmin ? 'TRANSCRIBERS' : 'PROJECT_ADMINS')}
-                      disabled={promoting === user.id}
-                      className="btn btn-primary btn-xs gap-1.5 disabled:opacity-50"
-                    >
-                      {isProjAdmin ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
-                      {promoting === user.id ? <Loader2 size={13} className="animate-spin" /> : isProjAdmin ? 'Demote' : 'Promote'}
-                    </button>
-                  )}
-                </div>
-              </GlassCard>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </GlassCard>
       )}
     </div>
   );

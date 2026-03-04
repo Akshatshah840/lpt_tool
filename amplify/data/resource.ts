@@ -12,8 +12,7 @@ const schema = a.schema({
     tests:       a.hasMany('Test', 'projectId'),
     audioAssets: a.hasMany('AudioAsset', 'projectId'),
   }).authorization(allow => [
-    allow.group('APP_ADMINS'),
-    allow.group('PROJECT_ADMINS').to(['read', 'update']),
+    allow.groups(['APP_ADMINS', 'PROJECT_ADMINS']),
   ]),
 
   AudioAsset: a.model({

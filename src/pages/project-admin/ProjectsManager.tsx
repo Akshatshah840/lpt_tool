@@ -380,25 +380,29 @@ export function ProjectAdminProjectsManager() {
 
   async function deleteProject(p: ProjectRow) {
     if (!confirm(`Delete "${p.name}"? This cannot be undone.`)) return;
-    // Cascade: delete Test children first
-    const testsRes = await client.models.Test.list({ filter: { projectId: { eq: p.id } } });
-    for (const test of testsRes.data ?? []) {
-      const [taaRes, trRes] = await Promise.all([
-        client.models.TestAudioAsset.list({ filter: { testId: { eq: test.id } } }),
-        client.models.TestResult.list({ filter: { testId: { eq: test.id } } }),
-      ]);
-      await Promise.all([
-        ...(taaRes.data ?? []).map((taa: { id: string }) => client.models.TestAudioAsset.delete({ id: taa.id })),
-        ...(trRes.data ?? []).map((tr: { id: string }) => client.models.TestResult.delete({ id: tr.id })),
-      ]);
-      await client.models.Test.delete({ id: test.id });
+    try {
+      // Cascade: delete Test children first
+      const testsRes = await client.models.Test.list({ filter: { projectId: { eq: p.id } } });
+      for (const test of testsRes.data ?? []) {
+        const [taaRes, trRes] = await Promise.all([
+          client.models.TestAudioAsset.list({ filter: { testId: { eq: test.id } } }),
+          client.models.TestResult.list({ filter: { testId: { eq: test.id } } }),
+        ]);
+        await Promise.all([
+          ...(taaRes.data ?? []).map((taa: { id: string }) => client.models.TestAudioAsset.delete({ id: taa.id })),
+          ...(trRes.data ?? []).map((tr: { id: string }) => client.models.TestResult.delete({ id: tr.id })),
+        ]);
+        await client.models.Test.delete({ id: test.id });
+      }
+      // Delete AudioAssets for this project
+      const assetsRes = await client.models.AudioAsset.list({ filter: { projectId: { eq: p.id } } });
+      await Promise.all((assetsRes.data ?? []).map((a: { id: string }) => client.models.AudioAsset.delete({ id: a.id })));
+      // Delete Project
+      await client.models.Project.delete({ id: p.id });
+      setProjects(prev => prev.filter(r => r.id !== p.id));
+    } catch (e) {
+      alert('Delete failed: ' + (e instanceof Error ? e.message : 'Unknown error'));
     }
-    // Delete AudioAssets for this project
-    const assetsRes = await client.models.AudioAsset.list({ filter: { projectId: { eq: p.id } } });
-    await Promise.all((assetsRes.data ?? []).map((a: { id: string }) => client.models.AudioAsset.delete({ id: a.id })));
-    // Delete Project
-    await client.models.Project.delete({ id: p.id });
-    setProjects(prev => prev.filter(r => r.id !== p.id));
   }
 
   return (
