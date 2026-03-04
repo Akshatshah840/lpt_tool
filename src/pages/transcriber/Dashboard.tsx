@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'English', hi: 'Hindi', es: 'Spanish', fr: 'French',
-  de: 'German', ar: 'Arabic', zh: 'Chinese', pt: 'Portuguese',
-  ru: 'Russian', ja: 'Japanese',
-};
 import { ClipboardList, ArrowRight, Clock, CheckCircle2, Loader2 } from 'lucide-react';
+import { LANGUAGE_NAMES } from '@/lib/languages';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { StatCard } from '@/components/shared/StatCard';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -56,8 +51,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
 
         const items: TestItem[] = [];
         for (const t of (testsRes.data ?? [])) {
-          // Only OPEN tests in the user's language
-          if (t.status !== 'OPEN') continue;
+          // Only tests in the user's language
           if (t.languageCode !== userLanguage) continue;
 
           // Skip tests from closed projects
@@ -95,10 +89,10 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-base-content">My Tests</h1>
+        <h1 className="text-2xl font-bold text-base-content">My Projects</h1>
         <p className="text-base-content/40 text-sm mt-1">
-          Open tests for <span className="font-medium" style={{ color: 'oklch(var(--p))' }}>{userLanguage ? (LANGUAGE_NAMES[userLanguage] ?? userLanguage) : ''}</span>
-          {' '}— all available tests are shown automatically
+          Open projects for <span className="font-medium" style={{ color: 'oklch(var(--p))' }}>{userLanguage ? (LANGUAGE_NAMES[userLanguage] ?? userLanguage) : ''}</span>
+          {' '}— all available projects are shown automatically
         </p>
       </div>
 
@@ -116,16 +110,16 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
       ) : tests.length === 0 ? (
         <EmptyState
           icon={<ClipboardList size={24} />}
-          heading="No open tests available"
-          description={`Tests for ${userLanguage ? (LANGUAGE_NAMES[userLanguage] ?? userLanguage) : ''} will appear here when a Project Admin publishes them.`}
+          heading="No open projects available"
+          description={`Projects for ${userLanguage ? (LANGUAGE_NAMES[userLanguage] ?? userLanguage) : ''} will appear here when a Project Admin publishes them.`}
         />
       ) : (
         <div className="space-y-4">
-          {/* Pending tests */}
+          {/* Pending projects */}
           {pending.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-base-content/50 uppercase tracking-wider">
-                Pending Tests ({pending.length})
+                Pending Projects ({pending.length})
               </h2>
               {pending.map(t => (
                 <GlassCard key={t.testId} hover className="p-5 flex items-start justify-between gap-4">
@@ -161,11 +155,11 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
             </div>
           )}
 
-          {/* Completed tests */}
+          {/* Completed projects */}
           {completed.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-base-content/50 uppercase tracking-wider">
-                Completed Tests ({completed.length})
+                Completed Projects ({completed.length})
               </h2>
               {completed.map(t => (
                 <GlassCard key={t.testId} className="p-5 flex items-start justify-between gap-4 opacity-75">

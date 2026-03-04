@@ -73,6 +73,10 @@ export function ProjectAdminDashboard() {
     try {
       const newStatus = project.status === 'OPEN' ? 'CLOSED' : 'OPEN';
       await client.models.Project.update({ id: project.id, status: newStatus });
+      const testsRes = await client.models.Test.list({ filter: { projectId: { eq: project.id } } });
+      for (const test of testsRes.data ?? []) {
+        await client.models.Test.update({ id: test.id, status: newStatus });
+      }
       setProjects(prev => prev.map(p => p.id === project.id ? { ...p, status: newStatus } : p));
     } finally {
       setToggling(null);

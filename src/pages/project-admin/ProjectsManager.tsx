@@ -9,14 +9,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
-
-const LANGUAGES = [
-  { code: 'hi', label: 'Hindi',   flag: '🇮🇳' },
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'es', label: 'Spanish', flag: '🇪🇸' },
-  { code: 'fr', label: 'French',  flag: '🇫🇷' },
-  { code: 'de', label: 'German',  flag: '🇩🇪' },
-];
+import { LANGUAGES } from '@/lib/languages';
 
 interface PendingClip {
   file: File | null;

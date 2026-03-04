@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Users, BarChart2,
-  FileAudio, ClipboardList, CheckSquare, LogOut, Mic,
+  CheckSquare, LogOut, Mic,
 } from 'lucide-react';
 import type { UserRole } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -18,8 +18,6 @@ const APP_ADMIN_NAV: NavItem[] = [
 const PROJECT_ADMIN_NAV: NavItem[] = [
   { to: '/project/dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={18} /> },
   { to: '/project/projects',     label: 'Projects',     icon: <FolderOpen size={18} /> },
-  { to: '/project/tests',        label: 'Tests',        icon: <ClipboardList size={18} /> },
-  { to: '/project/audio-assets', label: 'Audio Assets', icon: <FileAudio size={18} /> },
   { to: '/project/users',        label: 'Users',        icon: <Users size={18} /> },
 ];
 
