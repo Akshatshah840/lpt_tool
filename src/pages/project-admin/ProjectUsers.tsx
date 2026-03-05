@@ -72,12 +72,9 @@ export function ProjectAdminProjectUsers() {
   async function load() {
     if (!projectId) return;
     try {
-      const [projRes, testsRes, assetsRes, taaRes, resultsRes] = await Promise.all([
+      const [projRes, testsRes] = await Promise.all([
         client.models.Project.get({ id: projectId }),
-        client.models.Test.list(),
-        client.models.AudioAsset.list(),
-        client.models.TestAudioAsset.list(),
-        client.models.TestResult.list(),
+        client.models.Test.list({ filter: { projectId: { eq: projectId } } }),
       ]);
 
       const proj = projRes.data;
@@ -94,19 +91,16 @@ export function ProjectAdminProjectUsers() {
       ) as TestInfo | undefined;
       setTest(foundTest ?? null);
 
-      // Clips: AudioAssets for this project, filtered via TestAudioAsset join
       if (foundTest) {
-        const taaIds = new Set(
-          (taaRes.data ?? [])
-            .filter((taa: { testId: string }) => taa.testId === foundTest.id)
-            .map((taa: { audioAssetId: string }) => taa.audioAssetId)
-        );
-        const projectClips = (assetsRes.data ?? []).filter(
-          (a: { id: string; projectId: string }) => a.projectId === projectId || taaIds.has(a.id)
-        );
+        // Fetch only assets for this project + results for this test
+        const [assetsRes, resultsRes] = await Promise.all([
+          client.models.AudioAsset.list({ filter: { projectId: { eq: projectId } } }),
+          client.models.TestResult.list({ filter: { testId: { eq: foundTest.id } } }),
+        ]);
+
         // Resolve presigned URLs for all clips in parallel
         const clipRows: ClipRow[] = await Promise.all(
-          projectClips.map(async (a: {
+          (assetsRes.data ?? []).map(async (a: {
             id: string; filename: string; s3Key: string;
             referenceTranscription?: string | null; fileSizeKb?: number | null;
           }) => {
@@ -124,10 +118,7 @@ export function ProjectAdminProjectUsers() {
         );
         setClips(clipRows);
 
-        const testResults = (resultsRes.data ?? []).filter(
-          (r: { testId: string }) => r.testId === foundTest.id
-        );
-        setUsers(testResults.map((r: {
+        setUsers((resultsRes.data ?? []).map((r: {
           id: string; userId: string; userName?: string | null;
           userEmail?: string | null; status: string;
           overallWer?: number | null; passed?: boolean | null;

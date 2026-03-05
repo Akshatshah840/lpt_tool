@@ -59,10 +59,11 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
         return;
       }
 
-      // Load clips
-      const clipsRes = await client.models.TestAudioAsset.list();
+      // Load clips — server-side filter avoids pagination misses
+      const clipsRes = await client.models.TestAudioAsset.list({
+        filter: { testId: { eq: testId } },
+      });
       const myClips = (clipsRes.data ?? [])
-        .filter(c => c.testId === testId)
         .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
       const enrichedClips: Clip[] = [];
@@ -87,9 +88,11 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
       setClips(enrichedClips);
 
       // Check for existing result (resume or guard)
-      const existingResultRes = await client.models.TestResult.list();
+      const existingResultRes = await client.models.TestResult.list({
+        filter: { testId: { eq: testId } },
+      });
       const allMyResults = (existingResultRes.data ?? []).filter(
-        r => r.testId === testId && r.userId === userId
+        r => r.userId === userId
       );
 
       // GUARD: already completed → redirect to result
