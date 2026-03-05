@@ -338,8 +338,8 @@ export function ProjectAdminProjectsManager() {
     const [projRes, testsRes, clipsRes, resultsRes] = await Promise.all([
       client.models.Project.list(),
       client.models.Test.list(),
-      client.models.TestAudioAsset.list(),
-      client.models.TestResult.list(),
+      client.models.TestAudioAsset.list({ limit: 1000 }),
+      client.models.TestResult.list({ limit: 1000 }),
     ]);
     const allProjects = projRes.data ?? [];
     const allTests    = testsRes.data ?? [];
@@ -388,15 +388,23 @@ export function ProjectAdminProjectsManager() {
           client.models.TestAudioAsset.list({ filter: { testId: { eq: test.id } } }),
           client.models.TestResult.list({ filter: { testId: { eq: test.id } } }),
         ]);
-        await Promise.all([
-          ...(taaRes.data ?? []).map((taa: { id: string }) => client.models.TestAudioAsset.delete({ id: taa.id })),
-          ...(trRes.data ?? []).map((tr: { id: string }) => client.models.TestResult.delete({ id: tr.id })),
-        ]);
+        await Promise.all((taaRes.data ?? []).map((taa: { id: string }) => client.models.TestAudioAsset.delete({ id: taa.id })));
+        for (const tr of trRes.data ?? []) {
+          const transRes = await client.models.Transcription.list({
+            filter: { testResultId: { eq: tr.id } },
+          });
+          await Promise.all((transRes.data ?? []).map((t: { id: string }) => client.models.Transcription.delete({ id: t.id })));
+          await client.models.TestResult.delete({ id: tr.id });
+        }
         await client.models.Test.delete({ id: test.id });
       }
-      // Delete AudioAssets for this project
+      // Delete AudioAssets for this project (with S3 cleanup)
       const assetsRes = await client.models.AudioAsset.list({ filter: { projectId: { eq: p.id } } });
-      await Promise.all((assetsRes.data ?? []).map((a: { id: string }) => client.models.AudioAsset.delete({ id: a.id })));
+      const { remove } = await import('aws-amplify/storage');
+      await Promise.all((assetsRes.data ?? []).map(async (a: { id: string; s3Key: string }) => {
+        try { await remove({ path: a.s3Key }); } catch { /* ignore if already gone */ }
+        await client.models.AudioAsset.delete({ id: a.id });
+      }));
       // Delete Project
       await client.models.Project.delete({ id: p.id });
       setProjects(prev => prev.filter(r => r.id !== p.id));

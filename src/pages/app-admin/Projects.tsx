@@ -97,9 +97,38 @@ export function AppAdminProjects() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this project? All associated tests and assets will be affected.')) return;
-    await client.models.Project.delete({ id });
-    await loadProjects();
+    if (!confirm('Delete this project? All associated tests and assets will be permanently removed.')) return;
+    try {
+      // Cascade: delete Tests and their children
+      const testsRes = await client.models.Test.list({ filter: { projectId: { eq: id } } });
+      for (const test of testsRes.data ?? []) {
+        const [taaRes, trRes] = await Promise.all([
+          client.models.TestAudioAsset.list({ filter: { testId: { eq: test.id } } }),
+          client.models.TestResult.list({ filter: { testId: { eq: test.id } } }),
+        ]);
+        await Promise.all((taaRes.data ?? []).map((taa: { id: string }) => client.models.TestAudioAsset.delete({ id: taa.id })));
+        for (const tr of trRes.data ?? []) {
+          const transRes = await client.models.Transcription.list({
+            filter: { testResultId: { eq: tr.id } },
+          });
+          await Promise.all((transRes.data ?? []).map((t: { id: string }) => client.models.Transcription.delete({ id: t.id })));
+          await client.models.TestResult.delete({ id: tr.id });
+        }
+        await client.models.Test.delete({ id: test.id });
+      }
+      // Delete AudioAssets with S3 cleanup
+      const assetsRes = await client.models.AudioAsset.list({ filter: { projectId: { eq: id } } });
+      const { remove } = await import('aws-amplify/storage');
+      await Promise.all((assetsRes.data ?? []).map(async (a: { id: string; s3Key: string }) => {
+        try { await remove({ path: a.s3Key }); } catch { /* already deleted */ }
+        await client.models.AudioAsset.delete({ id: a.id });
+      }));
+      // Delete Project
+      await client.models.Project.delete({ id });
+      await loadProjects();
+    } catch (e) {
+      alert('Delete failed: ' + (e instanceof Error ? e.message : 'Unknown error'));
+    }
   }
 
   return (

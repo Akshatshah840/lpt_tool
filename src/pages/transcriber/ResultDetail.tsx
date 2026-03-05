@@ -44,9 +44,10 @@ export function TranscriberResultDetail() {
       if (!r) { setLoading(false); return; }
 
       const testRes = await client.models.Test.get({ id: r.testId });
-      const transRes = await client.models.Transcription.list();
+      const transRes = await client.models.Transcription.list({
+        filter: { testResultId: { eq: resultId } },
+      });
       const myTrans = (transRes.data ?? [])
-        .filter((t: { testResultId: string }) => t.testResultId === resultId)
         .sort((a: { sortOrder?: number | null }, b: { sortOrder?: number | null }) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
       const enriched: Transcription[] = [];

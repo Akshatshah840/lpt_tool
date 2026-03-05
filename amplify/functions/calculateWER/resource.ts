@@ -4,4 +4,5 @@ export const calculateWER = defineFunction({
   name: 'calculateWER',
   entry: './handler.ts',
   resourceGroupName: 'data',
+  timeoutSeconds: 30,
 });

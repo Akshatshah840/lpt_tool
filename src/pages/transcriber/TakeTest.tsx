@@ -17,7 +17,6 @@ interface Clip {
   audioAssetId: string;
   filename: string;
   s3Key: string;
-  referenceTranscription: string;
   sortOrder: number;
   audioUrl?: string;
 }
@@ -43,6 +42,7 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
   const [testResultId, setTestResultId] = useState<string | null>(null);
   const [finalResult, setFinalResult] = useState<{ overallWer: number; passed: boolean } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isSubmittingRef = useRef(false);
 
   useEffect(() => {
     async function load() {
@@ -79,7 +79,6 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
           audioAssetId: asset.id,
           filename: asset.filename,
           s3Key: asset.s3Key,
-          referenceTranscription: asset.referenceTranscription,
           sortOrder: c.sortOrder ?? 0,
           audioUrl,
         });
@@ -106,8 +105,10 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
       const existingResult = allMyResults.find(r => r.status !== 'COMPLETED');
       if (existingResult) {
         setTestResultId(existingResult.id);
-        const transRes = await client.models.Transcription.list();
-        const existing = (transRes.data ?? []).filter(t => t.testResultId === existingResult.id);
+        const transRes = await client.models.Transcription.list({
+          filter: { testResultId: { eq: existingResult.id } },
+        });
+        const existing = transRes.data ?? [];
         const map: Record<string, string> = {};
         for (const t of existing) {
           if (t.submittedText) map[t.audioAssetId] = t.submittedText;
@@ -147,14 +148,30 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
     if (clipIndex > 0) setClipIndex(i => i - 1);
   }
 
+  async function handleAudioError() {
+    if (!currentClip) return;
+    try {
+      const newUrl = await resolveAudioUrl(currentClip.s3Key);
+      setClips(prev => prev.map((c, i) => i === clipIndex ? { ...c, audioUrl: newUrl } : c));
+    } catch (e) {
+      console.error('Failed to refresh audio URL:', e);
+    }
+  }
+
   async function handleSubmit() {
     if (!testResultId || !testId || !test) return;
+    if (isSubmittingRef.current) return; // prevent double-submit
+    isSubmittingRef.current = true;
     setPhase('submitting');
 
     try {
-      // Create/update Transcription records
-      const transRes = await client.models.Transcription.list();
-      const existing = (transRes.data ?? []).filter(t => t.testResultId === testResultId);
+      // Create/update Transcription records (server-side filter)
+      const transRes = await client.models.Transcription.list({
+        filter: { testResultId: { eq: testResultId } },
+      });
+      const existing = transRes.data ?? [];
+
+      const transcriptionPayload: Array<{ id: string; audioAssetId: string; submittedText: string; sortOrder: number }> = [];
 
       for (let i = 0; i < clips.length; i++) {
         const clip = clips[i];
@@ -162,66 +179,38 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
         const existingTrans = existing.find(t => t.audioAssetId === clip.audioAssetId);
 
         if (existingTrans) {
-          await client.models.Transcription.update({
-            id: existingTrans.id,
-            submittedText,
-          });
+          await client.models.Transcription.update({ id: existingTrans.id, submittedText });
+          transcriptionPayload.push({ id: existingTrans.id, audioAssetId: clip.audioAssetId, submittedText, sortOrder: i + 1 });
         } else {
-          await client.models.Transcription.create({
+          const created = await client.models.Transcription.create({
             testResultId,
             audioAssetId: clip.audioAssetId,
             submittedText,
             sortOrder: i + 1,
           });
+          if (created.data?.id) {
+            transcriptionPayload.push({ id: created.data.id, audioAssetId: clip.audioAssetId, submittedText, sortOrder: i + 1 });
+          }
         }
       }
 
-      // Calculate WER client-side (same logic as the Lambda)
-      function calcWER(ref: string, hyp: string): number {
-        const r = ref.toLowerCase().trim().split(/\s+/).filter(Boolean);
-        const h = hyp.toLowerCase().trim().split(/\s+/).filter(Boolean);
-        const n = r.length, m = h.length;
-        if (n === 0) return m === 0 ? 0 : 1;
-        const dp = Array.from({ length: n + 1 }, (_, i) => Array(m + 1).fill(0));
-        for (let i = 0; i <= n; i++) dp[i][0] = i;
-        for (let j = 0; j <= m; j++) dp[0][j] = j;
-        for (let i = 1; i <= n; i++)
-          for (let j = 1; j <= m; j++)
-            dp[i][j] = r[i-1] === h[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-        return dp[n][m] / n;
-      }
-
-      let totalWer = 0;
-      const updatedTrans = await client.models.Transcription.list();
-      const myTrans = (updatedTrans.data ?? []).filter(t => t.testResultId === testResultId);
-
-      for (const clip of clips) {
-        const wer = calcWER(clip.referenceTranscription, transcriptions[clip.audioAssetId] ?? '');
-        totalWer += wer;
-        const trans = myTrans.find(t => t.audioAssetId === clip.audioAssetId);
-        if (trans) {
-          await client.models.Transcription.update({ id: trans.id, wer });
-        }
-      }
-
-      const overallWer = clips.length > 0 ? totalWer / clips.length : 0;
-      const accuracy = 1 - Math.min(overallWer, 1);
-      const passed = accuracy >= test.minAccuracy;
-
-      await client.models.TestResult.update({
-        id: testResultId,
-        status: 'COMPLETED',
-        overallWer,
-        passed,
-        completedAt: new Date().toISOString(),
+      // WER calculated server-side via Lambda — referenceTranscription never sent to client
+      const werResult = await client.mutations.calculateWer({
+        testResultId,
+        transcriptions: JSON.stringify(transcriptionPayload),
+        minAccuracy: test.minAccuracy,
+        testId,
       });
 
-      setFinalResult({ overallWer, passed });
+      const resultData = werResult.data as { overallWer: number; passed: boolean };
+      setFinalResult({ overallWer: resultData.overallWer, passed: resultData.passed });
       setPhase('result');
     } catch (e) {
       console.error(e);
       alert('Submission failed: ' + (e instanceof Error ? e.message : 'Unknown error'));
       setPhase('taking');
+    } finally {
+      isSubmittingRef.current = false;
     }
   }
 
@@ -290,6 +279,20 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
     );
   }
 
+  if (phase === 'taking' && clips.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <GlassCard className="p-8 text-center max-w-md">
+          <p className="text-error text-lg font-semibold mb-2">No audio clips available</p>
+          <p className="text-base-content/40 text-sm">This test has no clips. Contact a project admin.</p>
+          <button onClick={() => navigate('/transcriber/dashboard')} className="btn btn-ghost btn-sm mt-4">
+            Back to Dashboard
+          </button>
+        </GlassCard>
+      </div>
+    );
+  }
+
   if (!currentClip) return null;
 
   const isLast = clipIndex === clips.length - 1;
@@ -333,8 +336,10 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
         </p>
         {currentClip.audioUrl && (
           <AudioPlayer
+            key={currentClip.audioAssetId}
             src={currentClip.audioUrl}
             onEnded={() => textareaRef.current?.focus()}
+            onError={handleAudioError}
           />
         )}
       </GlassCard>

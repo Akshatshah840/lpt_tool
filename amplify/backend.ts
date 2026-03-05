@@ -82,9 +82,10 @@ exportLambda.addToRolePolicy(new PolicyStatement({
 const werLambda = backend.calculateWER.resources.lambda as LambdaFunction;
 werLambda.addEnvironment('TEST_RESULT_TABLE_NAME',    testResultTableName);
 werLambda.addEnvironment('TRANSCRIPTION_TABLE_NAME',  transTableName);
+werLambda.addEnvironment('AUDIO_ASSET_TABLE_NAME',    audioAssetTableName);
 
 werLambda.addToRolePolicy(new PolicyStatement({
   effect: Effect.ALLOW,
-  actions: ['dynamodb:UpdateItem'],
-  resources: [testResultTableArn, transTableArn],
+  actions: ['dynamodb:UpdateItem', 'dynamodb:GetItem'],
+  resources: [testResultTableArn, transTableArn, audioAssetTableArn],
 }));

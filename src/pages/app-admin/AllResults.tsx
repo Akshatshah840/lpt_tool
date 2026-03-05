@@ -95,6 +95,11 @@ export function AppAdminAllResults() {
           onChange={e => setSearch(e.target.value)}
         />
       </GlassCard>
+      {nextToken && (
+        <p className="text-xs text-base-content/30 -mt-2">
+          Showing {results.length} results — use "Load More" to search all records.
+        </p>
+      )}
 
       {loading ? (
         <div className="space-y-2">{[...Array(8)].map((_, i) => <div key={i} className="h-12 skeleton rounded-lg" />)}</div>

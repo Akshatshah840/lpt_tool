@@ -130,7 +130,7 @@ export function WordDiff({ reference, submitted, wer, clipNumber, audioFilename 
           <div className="text-xs font-semibold text-base-content/40 uppercase tracking-wider mb-2">
             Reference
           </div>
-          <div className="text-sm leading-relaxed bg-base-content/[0.04] rounded-lg p-3 min-h-[60px]">
+          <div className="text-sm leading-relaxed bg-base-content/[0.04] rounded-lg p-3 min-h-[60px] break-words">
             {reference ? renderTokens(left) : <span className="text-base-content/20 italic">empty</span>}
           </div>
         </div>
@@ -138,7 +138,7 @@ export function WordDiff({ reference, submitted, wer, clipNumber, audioFilename 
           <div className="text-xs font-semibold text-base-content/40 uppercase tracking-wider mb-2">
             Submitted
           </div>
-          <div className="text-sm leading-relaxed bg-base-content/[0.04] rounded-lg p-3 min-h-[60px]">
+          <div className="text-sm leading-relaxed bg-base-content/[0.04] rounded-lg p-3 min-h-[60px] break-words">
             {submitted
               ? renderTokens(right)
               : <span className="text-base-content/20 italic">not submitted</span>}

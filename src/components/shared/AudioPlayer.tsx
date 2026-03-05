@@ -7,17 +7,11 @@ interface AudioPlayerProps {
   onEnded?: () => void;
   className?: string;
   autoPlay?: boolean;
+  /** Called when audio fails to load (e.g. expired presigned URL). Parent should re-fetch the URL. */
+  onError?: () => void;
 }
 
-/**
- * Custom audio player using a presigned S3 URL.
- * - Resets fully when src changes (handles clip navigation)
- * - preload="auto" so large files buffer ahead and don't stall
- * - Shows buffering spinner while waiting for data
- * - Shows error state if audio fails to load
- * - Right-click / download disabled
- */
-export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerProps) {
+export function AudioPlayer({ src, onEnded, className, autoPlay, onError: onErrorProp }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying]     = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -26,17 +20,16 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
   const [isBuffering, setIsBuffering] = useState(false);
   const [isError, setIsError]         = useState(false);
 
-  // ── Reset when src changes ───────────────────────────────────────────────
+  // ── Reset display state when src changes ─────────────────────────────────
+  // NOTE: do NOT call audio.load() here — React already updates the src
+  // attribute on the <audio> element, and the browser re-fetches automatically.
+  // Calling load() while play() is pending causes AbortError.
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !src) return;
-    audio.pause();
     setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
     setIsBuffering(false);
     setIsError(false);
-    audio.load(); // forces browser to re-fetch new src
   }, [src]);
 
   // ── Event listeners ──────────────────────────────────────────────────────
@@ -44,36 +37,45 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onTimeUpdate    = () => setCurrentTime(audio.currentTime);
-    const onLoadedMeta    = () => { setDuration(audio.duration); setIsBuffering(false); };
-    const onPlay          = () => setIsPlaying(true);
-    const onPause         = () => setIsPlaying(false);
-    const onWaiting       = () => setIsBuffering(true);
-    const onCanPlay       = () => setIsBuffering(false);
-    const onError         = () => { setIsError(true); setIsPlaying(false); setIsBuffering(false); };
-    const onEndedHandler  = () => { setIsPlaying(false); onEnded?.(); };
-    const onContextMenu   = (e: MouseEvent) => e.preventDefault();
+    const onTimeUpdate   = () => setCurrentTime(audio.currentTime);
+    const onLoadedMeta   = () => { setDuration(audio.duration); setIsBuffering(false); };
+    const onPlay         = () => { setIsPlaying(true);  setIsBuffering(false); };
+    const onPause        = () => setIsPlaying(false);
+    const onWaiting      = () => setIsBuffering(true);
+    const onCanPlay      = () => setIsBuffering(false);
+    const onCanPlayThru  = () => setIsBuffering(false);
+    const onSeeked       = () => setIsBuffering(false);
+    const onStalled      = () => setIsBuffering(false); // don't block forever on stall
+    const onError        = () => { setIsError(true); setIsPlaying(false); setIsBuffering(false); onErrorProp?.(); };
+    const onEndedHandler = () => { setIsPlaying(false); onEnded?.(); };
+    const blockCtx       = (e: MouseEvent) => e.preventDefault();
 
-    audio.addEventListener('timeupdate',     onTimeUpdate);
-    audio.addEventListener('loadedmetadata', onLoadedMeta);
-    audio.addEventListener('play',           onPlay);
-    audio.addEventListener('pause',          onPause);
-    audio.addEventListener('waiting',        onWaiting);
-    audio.addEventListener('canplay',        onCanPlay);
-    audio.addEventListener('error',          onError);
-    audio.addEventListener('ended',          onEndedHandler);
-    audio.addEventListener('contextmenu',    onContextMenu);
+    audio.addEventListener('timeupdate',      onTimeUpdate);
+    audio.addEventListener('loadedmetadata',  onLoadedMeta);
+    audio.addEventListener('play',            onPlay);
+    audio.addEventListener('pause',           onPause);
+    audio.addEventListener('waiting',         onWaiting);
+    audio.addEventListener('canplay',         onCanPlay);
+    audio.addEventListener('canplaythrough',  onCanPlayThru);
+    audio.addEventListener('seeked',          onSeeked);
+    audio.addEventListener('stalled',         onStalled);
+    audio.addEventListener('error',           onError);
+    audio.addEventListener('ended',           onEndedHandler);
+    audio.addEventListener('contextmenu',     blockCtx);
 
     return () => {
-      audio.removeEventListener('timeupdate',     onTimeUpdate);
-      audio.removeEventListener('loadedmetadata', onLoadedMeta);
-      audio.removeEventListener('play',           onPlay);
-      audio.removeEventListener('pause',          onPause);
-      audio.removeEventListener('waiting',        onWaiting);
-      audio.removeEventListener('canplay',        onCanPlay);
-      audio.removeEventListener('error',          onError);
-      audio.removeEventListener('ended',          onEndedHandler);
-      audio.removeEventListener('contextmenu',    onContextMenu);
+      audio.removeEventListener('timeupdate',      onTimeUpdate);
+      audio.removeEventListener('loadedmetadata',  onLoadedMeta);
+      audio.removeEventListener('play',            onPlay);
+      audio.removeEventListener('pause',           onPause);
+      audio.removeEventListener('waiting',         onWaiting);
+      audio.removeEventListener('canplay',         onCanPlay);
+      audio.removeEventListener('canplaythrough',  onCanPlayThru);
+      audio.removeEventListener('seeked',          onSeeked);
+      audio.removeEventListener('stalled',         onStalled);
+      audio.removeEventListener('error',           onError);
+      audio.removeEventListener('ended',           onEndedHandler);
+      audio.removeEventListener('contextmenu',     blockCtx);
     };
   }, [onEnded]);
 
@@ -85,11 +87,22 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
   }, [autoPlay, src]);
 
   // ── Controls ─────────────────────────────────────────────────────────────
-  const togglePlay = useCallback(() => {
+  const togglePlay = useCallback(async () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying) audio.pause();
-    else audio.play().catch(() => {});
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      try {
+        await audio.play();
+      } catch (e) {
+        // AbortError means a load() interrupted the play() — safe to ignore,
+        // the browser will start playing once the load settles.
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+        console.error('Audio play failed:', e);
+        setIsError(true);
+      }
+    }
   }, [isPlaying]);
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,11 +111,11 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
     audio.currentTime = Number(e.target.value);
   };
 
-  const handleRestart = () => {
+  const handleRestart = async () => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.currentTime = 0;
-    audio.play().catch(() => {});
+    try { await audio.play(); } catch { /* ignore */ }
   };
 
   const handleVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,20 +131,17 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  // ── Error state ──────────────────────────────────────────────────────────
   if (isError) {
     return (
       <div className={cn('flex items-center gap-2 text-error/70 text-sm', className)}>
         <AlertCircle size={15} />
         <span>Audio failed to load.</span>
         <button
-          onClick={() => { setIsError(false); audioRef.current?.load(); }}
+          onClick={() => { setIsError(false); setIsBuffering(false); onErrorProp?.(); }}
           className="btn btn-ghost btn-xs"
         >
           Retry
         </button>
-        {/* Keep the element so retry can work */}
-        <audio ref={audioRef} src={src} preload="auto" style={{ display: 'none' }} />
       </div>
     );
   }
@@ -141,7 +151,8 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
       className={cn('audio-player select-none', className)}
       onContextMenu={e => e.preventDefault()}
     >
-      {/* Hidden audio — preload=auto buffers full file to prevent stalling */}
+      {/* preload="auto" — browser buffers full file ahead of playback */}
+      {/* Never call audio.load() manually — it aborts pending play() calls */}
       <audio
         ref={audioRef}
         src={src}
@@ -160,14 +171,13 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
           <RotateCcw size={16} />
         </button>
 
-        {/* Play / Pause — shows spinner while buffering */}
+        {/* Play / Pause — NEVER disabled; buffering is just a visual indicator */}
         <button
           onClick={togglePlay}
-          disabled={isBuffering}
-          className="btn btn-circle btn-primary btn-md shadow-lg disabled:opacity-80"
+          className="btn btn-circle btn-primary btn-md shadow-lg"
           title={isPlaying ? 'Pause' : 'Play'}
         >
-          {isBuffering
+          {isBuffering && !isPlaying
             ? <Loader2 size={18} className="animate-spin" />
             : isPlaying
             ? <Pause size={18} />
@@ -188,7 +198,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay }: AudioPlayerPr
           />
           <div className="flex justify-between text-xs text-base-content/40">
             <span>{formatTime(currentTime)}</span>
-            <span>{isBuffering ? 'Buffering…' : formatTime(duration)}</span>
+            <span>{isBuffering && !duration ? 'Loading…' : formatTime(duration)}</span>
           </div>
         </div>
 

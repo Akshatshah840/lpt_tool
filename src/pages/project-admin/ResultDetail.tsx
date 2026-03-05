@@ -46,9 +46,10 @@ export function ProjectAdminResultDetail() {
       if (!r) { setLoading(false); return; }
 
       const testRes = await client.models.Test.get({ id: r.testId });
-      const transRes = await client.models.Transcription.list();
+      const transRes = await client.models.Transcription.list({
+        filter: { testResultId: { eq: resultId } },
+      });
       const myTrans = (transRes.data ?? [])
-        .filter(t => t.testResultId === resultId)
         .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
       // Enrich with audio asset info

@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { LANGUAGES } from '@/lib/languages';
 
 interface Test {
   id: string;
@@ -78,7 +79,11 @@ function CreateTestForm({ projects, audioAssets, onSave, onCancel }: CreateTestF
         </div>
         <div>
           <label className="block text-sm text-base-content/60 mb-1">Language *</label>
-          <input className="input input-bordered w-full" value={language} onChange={e => setLanguage(e.target.value)} placeholder="e.g. en, hi, es" />
+          <select className="select select-bordered w-full" value={language} onChange={e => setLanguage(e.target.value)}>
+            {LANGUAGES.map(l => (
+              <option key={l.code} value={l.code}>{l.flag} {l.label} ({l.code})</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm text-base-content/60 mb-1">Minimum Accuracy * ({minAccuracy}%)</label>

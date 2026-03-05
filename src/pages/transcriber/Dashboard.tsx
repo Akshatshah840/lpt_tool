@@ -33,6 +33,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
   const client = useAmplifyData();
   const [tests, setTests] = useState<TestItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -58,6 +59,9 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
           const project = allProjects.find((p: { id: string; status?: string }) => p.id === t.projectId);
           if (project?.status === 'CLOSED') continue;
 
+          // Skip closed tests
+          if (t.status === 'CLOSED') continue;
+
           const clipCount = allClips.filter((c: { testId: string }) => c.testId === t.id).length;
           const result = myResults.find((r: { testId: string }) => r.testId === t.id);
 
@@ -76,6 +80,9 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
           });
         }
         setTests(items);
+      } catch (e) {
+        console.error(e);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -85,6 +92,14 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
 
   const pending   = tests.filter(t => t.resultStatus !== 'COMPLETED');
   const completed = tests.filter(t => t.resultStatus === 'COMPLETED');
+
+  if (error) {
+    return (
+      <GlassCard className="p-8 text-center">
+        <p className="text-error">Failed to load projects. Please refresh the page.</p>
+      </GlassCard>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -199,8 +199,12 @@ export function ProjectAdminAudioAssets() {
     setPlayingId(assetId);
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(id: string, s3Key: string) {
     if (!confirm('Delete this audio asset?')) return;
+    try {
+      const { remove } = await import('aws-amplify/storage');
+      await remove({ path: s3Key });
+    } catch { /* already deleted */ }
     await client.models.AudioAsset.delete({ id });
     await load();
   }
@@ -222,6 +226,10 @@ export function ProjectAdminAudioAssets() {
         >
           <Upload size={16} /> Upload Audio
         </button>
+      </div>
+
+      <div className="alert alert-warning alert-soft text-sm">
+        <span>Assets uploaded here are <strong>not automatically linked</strong> to any test. Use the "Add Clip" button on the project detail page instead.</span>
       </div>
 
       {showUpload && (
@@ -279,7 +287,7 @@ export function ProjectAdminAudioAssets() {
                       </td>
                       <td>
                         <button
-                          onClick={() => handleDelete(a.id)}
+                          onClick={() => handleDelete(a.id, a.s3Key)}
                           className="btn btn-ghost btn-xs btn-square text-base-content/30 hover:text-error hover:bg-error/10"
                         >
                           <Trash2 size={14} />

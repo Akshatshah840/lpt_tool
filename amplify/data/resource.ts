@@ -2,6 +2,7 @@ import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { listUsersFn } from '../functions/listUsers/resource';
 import { updateUserGroupFn } from '../functions/updateUserGroup/resource';
 import { exportResultsFn } from '../functions/exportResults/resource';
+import { calculateWER } from '../functions/calculateWER/resource';
 
 const schema = a.schema({
 
@@ -107,6 +108,18 @@ const schema = a.schema({
     .returns(a.json())
     .authorization(allow => [allow.group('APP_ADMINS')])
     .handler(a.handler.function(updateUserGroupFn)),
+
+  // Calculate WER server-side — referenceTranscription never sent to client
+  calculateWer: a.mutation()
+    .arguments({
+      testResultId: a.string().required(),
+      transcriptions: a.string().required(), // JSON-encoded array of { id, audioAssetId, submittedText, sortOrder }
+      minAccuracy: a.float().required(),
+      testId: a.string().required(),
+    })
+    .returns(a.json())
+    .authorization(allow => [allow.authenticated()])
+    .handler(a.handler.function(calculateWER)),
 
   // Export results to CSV / XLSX (APP_ADMINS + PROJECT_ADMINS)
   exportResults: a.mutation()
