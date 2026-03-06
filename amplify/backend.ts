@@ -1,5 +1,6 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
+import { Aws } from 'aws-cdk-lib';
 import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
@@ -41,11 +42,14 @@ const poolArn = backend.auth.resources.userPool.userPoolArn;
 });
 
 // ── postConfirmation trigger — needs AdminAddUserToGroup to auto-assign TRANSCRIBERS
+// Use pseudo-parameter ARN pattern (Aws.REGION / Aws.ACCOUNT_ID) to avoid creating
+// a CDK reference from the Lambda back to the UserPool, which would cause a
+// circular dependency within the auth nested stack.
 const postConfirmationLambda = backend.postConfirmation.resources.lambda as LambdaFunction;
 postConfirmationLambda.addToRolePolicy(new PolicyStatement({
   effect: Effect.ALLOW,
   actions: ['cognito-idp:AdminAddUserToGroup'],
-  resources: [poolArn],
+  resources: [`arn:aws:cognito-idp:${Aws.REGION}:${Aws.ACCOUNT_ID}:userpool/*`],
 }));
 
 // ── DynamoDB table names & ARNs ──────────────────────────────────────────────
