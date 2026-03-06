@@ -7,7 +7,22 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 
-export function AppAdminDashboard() {
+function getGreeting(userName?: string | null) {
+  const hour = new Date().getHours();
+  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  const firstName = userName?.split(' ')[0];
+  return `Good ${timeOfDay}${firstName ? `, ${firstName}` : ''}`;
+}
+
+function formatTodayDate() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+interface AppAdminDashboardProps {
+  userName?: string | null;
+}
+
+export function AppAdminDashboard({ userName }: AppAdminDashboardProps) {
   const client = useAmplifyData();
   const [stats, setStats] = useState({
     projects: 0, tests: 0, results: 0, passRate: 0,
@@ -61,7 +76,8 @@ export function AppAdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-base-content">Dashboard</h1>
+        <p className="text-base-content/40 text-xs mb-1">{formatTodayDate()}</p>
+        <h1 className="text-2xl font-bold text-base-content">{getGreeting(userName)}</h1>
         <p className="text-base-content/40 text-sm mt-1">Global overview of all tests and results</p>
       </div>
 

@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Users as UsersIcon, ShieldCheck, ShieldOff, Search, AlertCircle, Loader2, Lock } from 'lucide-react';
+import { Users as UsersIcon, ShieldCheck, ShieldOff, Search, AlertCircle, Loader2, Lock, Shield, Briefcase, Mic } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { getInitials } from '@/lib/utils';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 
-const GROUP_LABELS: Record<string, { label: string; color: string }> = {
-  APP_ADMINS:     { label: 'App Admin',     color: 'badge-error' },
-  PROJECT_ADMINS: { label: 'Project Admin', color: 'badge-primary' },
-  TRANSCRIBERS:   { label: 'Transcriber',   color: 'badge-success' },
+const GROUP_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  APP_ADMINS:     { label: 'App Admin',     color: 'badge-error',    icon: <Shield size={10} /> },
+  PROJECT_ADMINS: { label: 'Project Admin', color: 'badge-primary',  icon: <Briefcase size={10} /> },
+  TRANSCRIBERS:   { label: 'Transcriber',   color: 'badge-success',  icon: <Mic size={10} /> },
 };
 
 interface UserRow {
@@ -119,7 +119,7 @@ export function AppAdminUsers({ canManageRoles = true }: Props) {
             {filtered.map(user => {
               const isProjAdmin = user.groups.includes('PROJECT_ADMINS');
               const isAppAdmin  = user.groups.includes('APP_ADMINS');
-              const groupInfo   = user.groups[0] ? (GROUP_LABELS[user.groups[0]] ?? { label: user.groups[0], color: 'badge-ghost' }) : null;
+              const groupInfo   = user.groups[0] ? (GROUP_LABELS[user.groups[0]] ?? { label: user.groups[0], color: 'badge-ghost', icon: null }) : null;
               return (
                 <div key={user.id} className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-base-content/[0.02] transition-colors">
                   {/* Left: avatar + name/email */}
@@ -133,7 +133,10 @@ export function AppAdminUsers({ canManageRoles = true }: Props) {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium text-base-content truncate">{user.name || user.email}</p>
                         {groupInfo && (
-                          <span className={`badge badge-sm ${groupInfo.color}`}>{groupInfo.label}</span>
+                          <span className={`badge badge-sm ${groupInfo.color} gap-1`}>
+                            {groupInfo.icon}
+                            {groupInfo.label}
+                          </span>
                         )}
                       </div>
                       {user.name && (

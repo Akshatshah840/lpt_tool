@@ -437,57 +437,64 @@ export function ProjectAdminProjectsManager() {
           <p className="text-base-content/25 text-sm mt-1">Click "New Project" to create your first one.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {projects.map(p => {
             const isOpen = p.status === 'OPEN';
+            const lang = LANGUAGES.find(l => l.code === p.languageCode);
             return (
-              <GlassCard key={p.id} className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div
-                    className="flex items-start gap-4 flex-1 min-w-0 cursor-pointer"
-                    onClick={() => navigate(`/project/projects/${p.id}`)}
-                  >
-                    <div className={`p-2.5 rounded-xl flex-shrink-0 ${isOpen ? 'bg-primary/15' : 'bg-base-content/[0.05]'}`}>
-                      {isOpen
-                        ? <FolderOpen size={20} className="text-primary" />
-                        : <FolderX size={20} className="text-base-content/30" />
-                      }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-base-content">{p.name}</h3>
-                        <StatusBadge status={p.status as 'OPEN' | 'CLOSED'} />
-                        {p.languageCode && (
-                          <span className="badge badge-ghost badge-sm">
-                            {p.languageCode.toUpperCase()}
-                          </span>
-                        )}
+              <GlassCard key={p.id} className="overflow-hidden">
+                {/* Top color stripe */}
+                <div className="h-1 bg-gradient-to-r from-primary to-secondary" />
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div
+                      className="flex items-start gap-3 flex-1 min-w-0 cursor-pointer"
+                      onClick={() => navigate(`/project/projects/${p.id}`)}
+                    >
+                      {/* Language flag */}
+                      {lang ? (
+                        <span className="text-2xl leading-none flex-shrink-0 mt-0.5" title={lang.label}>
+                          {lang.flag}
+                        </span>
+                      ) : (
+                        <div className={`p-2.5 rounded-xl flex-shrink-0 ${isOpen ? 'bg-primary/15' : 'bg-base-content/[0.05]'}`}>
+                          {isOpen
+                            ? <FolderOpen size={18} className="text-primary" />
+                            : <FolderX size={18} className="text-base-content/30" />
+                          }
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-base-content">{p.name}</h3>
+                          <StatusBadge status={p.status as 'OPEN' | 'CLOSED'} />
+                        </div>
+                        {p.description && <p className="text-base-content/40 text-sm mt-0.5 truncate">{p.description}</p>}
+                        <div className="flex items-center gap-4 mt-2 text-xs text-base-content/30">
+                          <span className="flex items-center gap-1"><FileAudio size={11} /> {p.clipCount} clips</span>
+                          <span>{p.userCount} user{p.userCount !== 1 ? 's' : ''}</span>
+                          <span>{p.completedCount} completed</span>
+                          <span>{formatDate(p.createdAt)}</span>
+                        </div>
                       </div>
-                      {p.description && <p className="text-base-content/40 text-sm mt-0.5 truncate">{p.description}</p>}
-                      <div className="flex items-center gap-4 mt-2 text-xs text-base-content/30">
-                        <span className="flex items-center gap-1"><FileAudio size={11} /> {p.clipCount} clips</span>
-                        <span>{p.userCount} user{p.userCount !== 1 ? 's' : ''}</span>
-                        <span>{p.completedCount} completed</span>
-                        <span>{formatDate(p.createdAt)}</span>
-                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button
-                      onClick={e => { e.stopPropagation(); toggleStatus(p); }}
-                      disabled={toggling === p.id}
-                      className="btn btn-ghost btn-xs border border-base-content/10 disabled:opacity-40"
-                    >
-                      {toggling === p.id ? '…' : isOpen ? 'Close' : 'Open'}
-                    </button>
-                    <button
-                      onClick={e => { e.stopPropagation(); deleteProject(p); }}
-                      className="btn btn-ghost btn-square btn-xs text-base-content/20 hover:text-error hover:bg-error/10"
-                      title="Delete project"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={e => { e.stopPropagation(); toggleStatus(p); }}
+                        disabled={toggling === p.id}
+                        className="btn btn-ghost btn-xs border border-base-content/10 disabled:opacity-40"
+                      >
+                        {toggling === p.id ? '…' : isOpen ? 'Close' : 'Open'}
+                      </button>
+                      <button
+                        onClick={e => { e.stopPropagation(); deleteProject(p); }}
+                        className="btn btn-ghost btn-square btn-xs text-base-content/20 hover:text-error hover:bg-error/10"
+                        title="Delete project"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </GlassCard>

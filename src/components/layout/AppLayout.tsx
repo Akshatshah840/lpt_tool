@@ -28,7 +28,7 @@ export function AppLayout({ role, userName, userEmail, children, onSignOut }: Ap
       <div className="drawer-side z-40">
         {/* Overlay (mobile only) */}
         <label htmlFor="sidebar-drawer" aria-label="close sidebar" className="drawer-overlay" />
-        <Sidebar role={role} onSignOut={onSignOut ?? (() => {})} />
+        <Sidebar role={role} userName={userName} userEmail={userEmail} onSignOut={onSignOut ?? (() => {})} />
       </div>
     </div>
   );

@@ -57,8 +57,24 @@ function DonutCenter({ cx, cy, passRate }: { cx?: number; cy?: number; passRate:
   );
 }
 
+// ── Greeting helpers ──────────────────────────────────────────────────────────
+function getGreeting(userName?: string | null) {
+  const hour = new Date().getHours();
+  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  const firstName = userName?.split(' ')[0];
+  return `Good ${timeOfDay}${firstName ? `, ${firstName}` : ''}`;
+}
+
+function formatTodayDate() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
-export function ProjectAdminDashboard() {
+interface ProjectAdminDashboardProps {
+  userName?: string | null;
+}
+
+export function ProjectAdminDashboard({ userName }: ProjectAdminDashboardProps) {
   const client = useAmplifyData();
   const [data, setData] = useState<DashData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -166,7 +182,8 @@ export function ProjectAdminDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-base-content">Dashboard</h1>
+        <p className="text-base-content/40 text-xs mb-1">{formatTodayDate()}</p>
+        <h1 className="text-2xl font-bold text-base-content">{getGreeting(userName)}</h1>
         <p className="text-base-content/40 text-sm mt-1">Overview of your tests and recent activity</p>
       </div>
 

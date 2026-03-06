@@ -9,6 +9,17 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { useAmplifyData } from '@/hooks/useAmplifyData';
 import { formatDate, werToAccuracy } from '@/lib/utils';
 
+function getGreeting(userName?: string | null) {
+  const hour = new Date().getHours();
+  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  const firstName = userName?.split(' ')[0];
+  return `Good ${timeOfDay}${firstName ? `, ${firstName}` : ''}`;
+}
+
+function formatTodayDate() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
 interface TestItem {
   testId: string;
   testName: string;
@@ -16,6 +27,7 @@ interface TestItem {
   minAccuracy: number;
   expiresAt?: string | null;
   clipCount: number;
+  clipsCompleted: number;
   // user's progress on this test
   resultId?: string | null;
   resultStatus?: string | null;   // IN_PROGRESS | COMPLETED | null
@@ -27,9 +39,10 @@ interface TestItem {
 interface TranscriberDashboardProps {
   userId: string | null;
   userLanguage: string | null;
+  userName?: string | null;
 }
 
-export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashboardProps) {
+export function TranscriberDashboard({ userId, userLanguage, userName }: TranscriberDashboardProps) {
   const client = useAmplifyData();
   const [tests, setTests] = useState<TestItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,16 +52,18 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
     async function load() {
       if (!userId || !userLanguage) { setLoading(false); return; }
       try {
-        const [testsRes, clipsRes, projectsRes, resultsRes] = await Promise.all([
+        const [testsRes, clipsRes, projectsRes, resultsRes, transRes] = await Promise.all([
           client.models.Test.list(),
           client.models.TestAudioAsset.list(),
           client.models.Project.list(),
           client.models.TestResult.list(),
+          client.models.Transcription.list(),
         ]);
 
-        const allClips   = clipsRes.data ?? [];
-        const allProjects = projectsRes.data ?? [];
-        const myResults  = (resultsRes.data ?? []).filter((r: { userId: string }) => r.userId === userId);
+        const allClips        = clipsRes.data ?? [];
+        const allProjects     = projectsRes.data ?? [];
+        const myResults       = (resultsRes.data ?? []).filter((r: { userId: string }) => r.userId === userId);
+        const allTranscriptions = transRes.data ?? [];
 
         const items: TestItem[] = [];
         for (const t of (testsRes.data ?? [])) {
@@ -64,6 +79,9 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
 
           const clipCount = allClips.filter((c: { testId: string }) => c.testId === t.id).length;
           const result = myResults.find((r: { testId: string }) => r.testId === t.id);
+          const clipsCompleted = result
+            ? allTranscriptions.filter((tr: { testResultId: string }) => tr.testResultId === result.id).length
+            : 0;
 
           items.push({
             testId: t.id,
@@ -72,6 +90,7 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
             minAccuracy: t.minAccuracy,
             expiresAt: t.expiresAt,
             clipCount,
+            clipsCompleted,
             resultId: result?.id ?? null,
             resultStatus: result?.status ?? null,
             overallWer: result?.overallWer ?? null,
@@ -104,7 +123,8 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-base-content">My Projects</h1>
+        <p className="text-base-content/40 text-xs mb-1">{formatTodayDate()}</p>
+        <h1 className="text-2xl font-bold text-base-content">{getGreeting(userName)}</h1>
         <p className="text-base-content/40 text-sm mt-1">
           Open projects for <span className="font-medium" style={{ color: 'oklch(var(--p))' }}>{userLanguage ? (LANGUAGE_NAMES[userLanguage] ?? userLanguage) : ''}</span>
           {' '}— all available projects are shown automatically
@@ -137,12 +157,22 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
                 Pending Projects ({pending.length})
               </h2>
               {pending.map(t => (
-                <GlassCard key={t.testId} hover className="p-5 flex items-start justify-between gap-4">
+                <GlassCard
+                  key={t.testId}
+                  hover
+                  className="p-5 flex items-start justify-between gap-4"
+                  style={t.resultStatus !== 'IN_PROGRESS' ? { borderLeft: '2px solid oklch(var(--wa) / 0.55)' } : undefined}
+                >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-base-content">{t.testName}</h3>
                       {t.resultStatus === 'IN_PROGRESS' && (
-                        <StatusBadge status="IN_PROGRESS" />
+                        <>
+                          <StatusBadge status="IN_PROGRESS" />
+                          <span className="badge badge-xs" style={{ background: 'oklch(var(--s) / 0.15)', color: 'oklch(var(--s))', border: '1px solid oklch(var(--s) / 0.25)' }}>
+                            resumed
+                          </span>
+                        </>
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
@@ -156,6 +186,19 @@ export function TranscriberDashboard({ userId, userLanguage }: TranscriberDashbo
                       <div className="flex items-center gap-1 mt-1.5 text-xs" style={{ color: 'oklch(var(--wa) / 0.75)' }}>
                         <Clock size={11} />
                         <span>Expires {formatDate(t.expiresAt)}</span>
+                      </div>
+                    )}
+                    {t.resultStatus === 'IN_PROGRESS' && t.clipCount > 0 && (
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs text-base-content/40 mb-1">
+                          <span>{t.clipsCompleted} of {t.clipCount} clips done</span>
+                          <span>{Math.round((t.clipsCompleted / t.clipCount) * 100)}%</span>
+                        </div>
+                        <progress
+                          className="progress progress-primary w-full h-1.5"
+                          value={t.clipsCompleted}
+                          max={t.clipCount}
+                        />
                       </div>
                     )}
                   </div>

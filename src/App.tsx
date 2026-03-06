@@ -53,7 +53,7 @@ export default function App() {
       <AppLayout role={role} userName={userName} userEmail={userEmail} onSignOut={signOut}>
         <Routes>
           <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/dashboard" element={<AppAdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AppAdminDashboard userName={userName} />} />
           <Route path="/admin/projects"  element={<AppAdminProjects />} />
           <Route path="/admin/users"     element={<AppAdminUsers />} />
           <Route path="/admin/results"   element={<AppAdminAllResults />} />
@@ -68,7 +68,7 @@ export default function App() {
       <AppLayout role={role} userName={userName} userEmail={userEmail} onSignOut={signOut}>
         <Routes>
           <Route path="/" element={<Navigate to="/project/dashboard" replace />} />
-          <Route path="/project/dashboard"            element={<ProjectAdminDashboard />} />
+          <Route path="/project/dashboard"            element={<ProjectAdminDashboard userName={userName} />} />
           <Route path="/project/projects"             element={<ProjectAdminProjectsManager />} />
           <Route path="/project/projects/:projectId"  element={<ProjectAdminProjectUsers />} />
           <Route path="/project/results/:resultId"    element={<ProjectAdminResultDetail />} />
@@ -87,7 +87,7 @@ export default function App() {
     <AppLayout role="TRANSCRIBERS" userName={userName} userEmail={userEmail} onSignOut={signOut}>
       <Routes>
         <Route path="/" element={<Navigate to="/transcriber/dashboard" replace />} />
-        <Route path="/transcriber/dashboard"    element={<TranscriberDashboard userId={userId} userLanguage={preferredLanguage} />} />
+        <Route path="/transcriber/dashboard"    element={<TranscriberDashboard userId={userId} userLanguage={preferredLanguage} userName={userName} />} />
         <Route path="/transcriber/test/:testId" element={<TranscriberTakeTest userId={userId} userName={userName} userEmail={userEmail} />} />
         <Route path="/transcriber/results"      element={<TranscriberMyResults userId={userId} />} />
         <Route path="/transcriber/result/:resultId" element={<TranscriberResultDetail />} />

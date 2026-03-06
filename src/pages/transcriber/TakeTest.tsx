@@ -47,7 +47,7 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
   useEffect(() => {
     async function load() {
       if (!testId || !userId) return;
-
+      try {
       const testRes = await client.models.Test.get({ id: testId });
       if (!testRes.data) return;
       setTest({ id: testRes.data.id, name: testRes.data.name, minAccuracy: testRes.data.minAccuracy });
@@ -127,6 +127,10 @@ export function TranscriberTakeTest({ userId, userName, userEmail }: TakeTestPro
       }
 
       setPhase('taking');
+      } catch (e) {
+        console.error('Failed to load test:', e);
+        setPhase('taking'); // show "no clips" state rather than frozen skeleton
+      }
     }
     load();
   }, [testId, userId]);

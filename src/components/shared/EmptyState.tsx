@@ -18,11 +18,14 @@ export function EmptyState({
   return (
     <div className={`card p-14 text-center ${className ?? ''}`}>
       <div
-        className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5 mx-auto"
+        className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5 mx-auto animate-pulse ring-2 ring-offset-2"
         style={{
           background: `oklch(var(${colorVar}) / 0.1)`,
           border: `1px solid oklch(var(${colorVar}) / 0.18)`,
-        }}
+          ringColor: `oklch(var(${colorVar}) / 0.1)`,
+          '--tw-ring-color': `oklch(var(${colorVar}) / 0.12)`,
+          '--tw-ring-offset-color': 'oklch(var(--b2))',
+        } as React.CSSProperties}
       >
         <span style={{ color: `oklch(var(${colorVar}) / 0.65)` }}>{icon}</span>
       </div>

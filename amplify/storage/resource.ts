@@ -5,6 +5,8 @@ export const storage = defineStorage({
   access: (allow) => ({
     'audio/*': [
       allow.groups(['APP_ADMINS', 'PROJECT_ADMINS']).to(['read', 'write', 'delete']),
+      allow.groups(['TRANSCRIBERS']).to(['read']),
+      // fallback for any authenticated user not yet assigned a group
       allow.authenticated.to(['read']),
     ],
     'exports/*': [

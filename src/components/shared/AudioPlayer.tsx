@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface AudioPlayerProps {
   src: string;
+  title?: string;
   onEnded?: () => void;
   className?: string;
   autoPlay?: boolean;
@@ -11,7 +12,9 @@ interface AudioPlayerProps {
   onError?: () => void;
 }
 
-export function AudioPlayer({ src, onEnded, className, autoPlay, onError: onErrorProp }: AudioPlayerProps) {
+const WAVEFORM_HEIGHTS = [0.45, 0.75, 1, 0.6, 0.85, 0.5, 0.9, 0.7, 0.45, 0.65, 0.8, 0.55];
+
+export function AudioPlayer({ src, title, onEnded, className, autoPlay, onError: onErrorProp }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying]     = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -21,9 +24,6 @@ export function AudioPlayer({ src, onEnded, className, autoPlay, onError: onErro
   const [isError, setIsError]         = useState(false);
 
   // ── Reset display state when src changes ─────────────────────────────────
-  // NOTE: do NOT call audio.load() here — React already updates the src
-  // attribute on the <audio> element, and the browser re-fetches automatically.
-  // Calling load() while play() is pending causes AbortError.
   useEffect(() => {
     setIsPlaying(false);
     setCurrentTime(0);
@@ -45,7 +45,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay, onError: onErro
     const onCanPlay      = () => setIsBuffering(false);
     const onCanPlayThru  = () => setIsBuffering(false);
     const onSeeked       = () => setIsBuffering(false);
-    const onStalled      = () => setIsBuffering(false); // don't block forever on stall
+    const onStalled      = () => setIsBuffering(false);
     const onError        = () => { setIsError(true); setIsPlaying(false); setIsBuffering(false); onErrorProp?.(); };
     const onEndedHandler = () => { setIsPlaying(false); onEnded?.(); };
     const blockCtx       = (e: MouseEvent) => e.preventDefault();
@@ -96,8 +96,6 @@ export function AudioPlayer({ src, onEnded, className, autoPlay, onError: onErro
       try {
         await audio.play();
       } catch (e) {
-        // AbortError means a load() interrupted the play() — safe to ignore,
-        // the browser will start playing once the load settles.
         if (e instanceof DOMException && e.name === 'AbortError') return;
         console.error('Audio play failed:', e);
         setIsError(true);
@@ -151,8 +149,6 @@ export function AudioPlayer({ src, onEnded, className, autoPlay, onError: onErro
       className={cn('audio-player select-none', className)}
       onContextMenu={e => e.preventDefault()}
     >
-      {/* preload="auto" — browser buffers full file ahead of playback */}
-      {/* Never call audio.load() manually — it aborts pending play() calls */}
       <audio
         ref={audioRef}
         src={src}
@@ -160,6 +156,35 @@ export function AudioPlayer({ src, onEnded, className, autoPlay, onError: onErro
         controlsList="nodownload nofullscreen noremoteplayback"
         style={{ display: 'none' }}
       />
+
+      {/* Optional title + waveform row */}
+      {(title || true) && (
+        <div className="flex items-center justify-between mb-3">
+          {title ? (
+            <span className="text-xs font-medium text-base-content/50 truncate max-w-[60%]">{title}</span>
+          ) : (
+            <span />
+          )}
+          {/* Waveform indicator */}
+          <div className="flex items-end gap-px h-4 flex-shrink-0">
+            {WAVEFORM_HEIGHTS.map((h, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'w-0.5 rounded-full',
+                  isPlaying ? 'audio-waveform-bar' : 'opacity-40'
+                )}
+                style={{
+                  height: `${Math.round(h * 16)}px`,
+                  background: 'oklch(var(--p))',
+                  animationDelay: `${i * 0.08}s`,
+                  animationDuration: `${0.65 + (i % 4) * 0.12}s`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         {/* Restart */}
@@ -171,7 +196,7 @@ export function AudioPlayer({ src, onEnded, className, autoPlay, onError: onErro
           <RotateCcw size={16} />
         </button>
 
-        {/* Play / Pause — NEVER disabled; buffering is just a visual indicator */}
+        {/* Play / Pause */}
         <button
           onClick={togglePlay}
           className="btn btn-circle btn-primary btn-md shadow-lg"
