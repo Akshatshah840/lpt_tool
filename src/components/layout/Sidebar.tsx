@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, FolderOpen, Users, BarChart2,
+  LayoutDashboard, FolderOpen, Users,
   CheckSquare, LogOut, Mic, ChevronUp,
 } from 'lucide-react';
 import type { UserRole } from '@/hooks/useAuth';
@@ -15,10 +15,10 @@ interface NavItem {
 }
 
 const APP_ADMIN_NAV: NavItem[] = [
-  { to: '/admin/dashboard', label: 'Dashboard',   icon: <LayoutDashboard size={18} />, section: 'Overview' },
-  { to: '/admin/projects',  label: 'Projects',    icon: <FolderOpen size={18} />,      section: 'Manage' },
-  { to: '/admin/users',     label: 'Users',       icon: <Users size={18} />,           section: 'Manage' },
-  { to: '/admin/results',   label: 'All Results', icon: <BarChart2 size={18} />,       section: 'Manage' },
+  { to: '/admin/dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={18} />, section: 'Overview' },
+  { to: '/admin/projects',     label: 'Projects',     icon: <FolderOpen size={18} />,      section: 'Manage' },
+  { to: '/admin/users',        label: 'Users',        icon: <Users size={18} />,           section: 'Manage' },
+  { to: '/admin/transcribers', label: 'Transcribers', icon: <Mic size={18} />,             section: 'Manage' },
 ];
 
 const PROJECT_ADMIN_NAV: NavItem[] = [

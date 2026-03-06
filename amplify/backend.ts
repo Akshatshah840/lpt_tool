@@ -8,6 +8,7 @@ import { calculateWER } from './functions/calculateWER/resource';
 import { exportResultsFn } from './functions/exportResults/resource';
 import { listUsersFn } from './functions/listUsers/resource';
 import { updateUserGroupFn } from './functions/updateUserGroup/resource';
+import { postConfirmation } from './functions/postConfirmation/resource';
 
 const backend = defineBackend({
   auth,
@@ -17,6 +18,7 @@ const backend = defineBackend({
   exportResultsFn,
   listUsersFn,
   updateUserGroupFn,
+  postConfirmation,
 });
 
 // ── Cognito User Pool ────────────────────────────────────────────────────────
@@ -37,6 +39,14 @@ const poolArn = backend.auth.resources.userPool.userPoolArn;
     resources: [poolArn],
   }));
 });
+
+// ── postConfirmation trigger — needs AdminAddUserToGroup to auto-assign TRANSCRIBERS
+const postConfirmationLambda = backend.postConfirmation.resources.lambda as LambdaFunction;
+postConfirmationLambda.addToRolePolicy(new PolicyStatement({
+  effect: Effect.ALLOW,
+  actions: ['cognito-idp:AdminAddUserToGroup'],
+  resources: [poolArn],
+}));
 
 // ── DynamoDB table names & ARNs ──────────────────────────────────────────────
 const tables               = backend.data.resources.tables;

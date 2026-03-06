@@ -362,14 +362,14 @@ export function ProjectAdminDashboard({ userName }: ProjectAdminDashboardProps) 
       <GlassCard className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-base-content">Projects</h2>
-          <Link to="/project/projects" className="text-xs text-primary hover:underline">Manage all →</Link>
+          <Link to="../projects" relative="path" className="text-xs text-primary hover:underline">Manage all →</Link>
         </div>
         {loading ? (
           <div className="space-y-2">{[...Array(2)].map((_, i) => <div key={i} className="h-[56px] skeleton rounded-lg" />)}</div>
         ) : (data?.projects.length ?? 0) === 0 ? (
           <div className="py-6 text-center">
             <p className="text-base-content/40 text-sm">No projects yet.</p>
-            <Link to="/project/projects" className="btn btn-primary btn-sm mt-3">Create Project</Link>
+            <Link to="../projects" relative="path" className="btn btn-primary btn-sm mt-3">Create Project</Link>
           </div>
         ) : (
           <div className="space-y-2">
@@ -378,7 +378,8 @@ export function ProjectAdminDashboard({ userName }: ProjectAdminDashboardProps) 
               return (
                 <Link
                   key={p.id}
-                  to={`/project/projects/${p.id}`}
+                  to={`../projects/${p.id}`}
+                  relative="path"
                   className="flex items-center justify-between py-3 px-4 rounded-xl bg-base-content/[0.03] hover:bg-base-content/[0.06] border border-base-content/[0.05] transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -420,7 +421,7 @@ export function ProjectAdminDashboard({ userName }: ProjectAdminDashboardProps) 
                   <span className="text-xs font-medium text-base-content/60">{werToAccuracy(r.overallWer)}</span>
                   <StatusBadge status={r.passed} />
                   <span className="text-xs text-base-content/30 hidden sm:inline">{formatDate(r.completedAt)}</span>
-                  <Link to={`/project/results/${r.id}`} className="btn btn-primary btn-xs">View</Link>
+                  <Link to={`../results/${r.id}`} relative="path" className="btn btn-primary btn-xs">View</Link>
                 </div>
               </div>
             ))}

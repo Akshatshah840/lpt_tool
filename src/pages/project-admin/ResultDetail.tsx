@@ -92,7 +92,7 @@ export function ProjectAdminResultDetail() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link to="/project/projects" className="btn btn-ghost btn-sm btn-square">
+        <Link to="../../projects" relative="path" className="btn btn-ghost btn-sm btn-square">
           <ArrowLeft size={18} />
         </Link>
         <div>

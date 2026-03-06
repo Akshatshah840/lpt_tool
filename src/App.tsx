@@ -7,9 +7,7 @@ import { AuthPage } from '@/pages/auth/AuthPage';
 import { ProfileSetup } from '@/pages/auth/ProfileSetup';
 
 import { AppAdminDashboard } from '@/pages/app-admin/Dashboard';
-import { AppAdminProjects } from '@/pages/app-admin/Projects';
 import { AppAdminUsers } from '@/pages/app-admin/Users';
-import { AppAdminAllResults } from '@/pages/app-admin/AllResults';
 
 import { ProjectAdminDashboard } from '@/pages/project-admin/Dashboard';
 import { ProjectAdminProjectsManager } from '@/pages/project-admin/ProjectsManager';
@@ -53,10 +51,12 @@ export default function App() {
       <AppLayout role={role} userName={userName} userEmail={userEmail} onSignOut={signOut}>
         <Routes>
           <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/dashboard" element={<AppAdminDashboard userName={userName} />} />
-          <Route path="/admin/projects"  element={<AppAdminProjects />} />
-          <Route path="/admin/users"     element={<AppAdminUsers />} />
-          <Route path="/admin/results"   element={<AppAdminAllResults />} />
+          <Route path="/admin/dashboard"           element={<AppAdminDashboard userName={userName} />} />
+          <Route path="/admin/projects"            element={<ProjectAdminProjectsManager />} />
+          <Route path="/admin/projects/:projectId" element={<ProjectAdminProjectUsers />} />
+          <Route path="/admin/results/:resultId"   element={<ProjectAdminResultDetail />} />
+          <Route path="/admin/transcribers"        element={<ProjectAdminTranscribers />} />
+          <Route path="/admin/users"               element={<AppAdminUsers canManageRoles={true} />} />
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Routes>
       </AppLayout>

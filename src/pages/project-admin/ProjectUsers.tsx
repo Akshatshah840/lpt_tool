@@ -4,6 +4,7 @@ import {
   ArrowLeft, Users, CheckCircle2, Loader2, Eye,
   FileAudio, Plus, X, Upload, Mic,
 } from 'lucide-react';
+import { ExportButton } from '@/components/shared/ExportButton';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { AudioPlayer } from '@/components/shared/AudioPlayer';
@@ -204,7 +205,7 @@ export function ProjectAdminProjectUsers() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <Link to="/project/projects" className="btn btn-ghost btn-sm btn-square">
+          <Link to=".." relative="path" className="btn btn-ghost btn-sm btn-square">
             <ArrowLeft size={18} />
           </Link>
           <div>
@@ -218,14 +219,17 @@ export function ProjectAdminProjectUsers() {
           </div>
         </div>
         {project && test && (
-          <button
-            onClick={toggleStatus}
-            disabled={toggling}
-            className={`btn btn-sm gap-2 disabled:opacity-40 ${isOpen ? 'btn-outline btn-error' : 'btn-success'}`}
-          >
-            {toggling ? <Loader2 size={14} className="animate-spin" /> : null}
-            {isOpen ? 'Close Project' : 'Open Project'}
-          </button>
+          <div className="flex items-center gap-2">
+            <ExportButton projectId={project.id} testId={test.id} />
+            <button
+              onClick={toggleStatus}
+              disabled={toggling}
+              className={`btn btn-sm gap-2 disabled:opacity-40 ${isOpen ? 'btn-outline btn-error' : 'btn-success'}`}
+            >
+              {toggling ? <Loader2 size={14} className="animate-spin" /> : null}
+              {isOpen ? 'Close Project' : 'Open Project'}
+            </button>
+          </div>
         )}
       </div>
 
@@ -446,7 +450,8 @@ export function ProjectAdminProjectUsers() {
                       <td className="text-right">
                         {u.status === 'COMPLETED' && (
                           <Link
-                            to={`/project/results/${u.resultId}`}
+                            to={`../../results/${u.resultId}`}
+                            relative="path"
                             className="btn btn-primary btn-xs gap-1"
                           >
                             <Eye size={12} /> View
